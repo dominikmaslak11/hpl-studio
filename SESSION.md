@@ -62,12 +62,27 @@ Zapis prac nad narzędziami i dokumentacją HPL dla Orange5 oraz analizą format
 - [x] **C** — Angielska wersja przewodnika (`docs/Guide_HPL_EN.md`).
 - [x] **D** — Wersja lokalna (Electron) w `desktop/`: natywny zapis plików + AI DeepSeek/Claude po kluczu API.
 
+## Dodatkowo zrobione
+- [x] **Dwujęzyczne IDE (PL/EN)** — pełny przełącznik języka (i18n: statyczne UI, ściąga, samouczek, bloki, walidator, komunikaty debuggera/AI); wybór zapisywany lokalnie.
+- [x] **Otwieranie plików `.hpl`** z dysku (web: file input; desktop: natywne okno).
+- [x] **Dwujęzyczne README** — `README.md` (PL) + `README.en.md` (EN) z odnośnikami.
+- [x] **Motywy** jasny/ciemny/wysoki kontrast/system.
+- [x] Materiały promocyjne: post na MHHAuto (kategoria „EEPROM – Microcontroller") oraz wiadomość do znajomego Vlada (`C:\hack\message_to_Vlads_friend.md`, poza repo).
+
+Wersje artefaktu HPL Studio: v1→v8 (v8 = dwujęzyczność + otwieranie plików). Skrót klawiszowy do repo w Claude Code: `/artifacts`.
+
+## Ścieżki lokalne
+- Repo: `C:\hack\hpl-studio\` · IDE: `C:\hack\hpl-studio\hpl-studio.html`
+- Przewodniki: `docs\Przewodnik_HPL_PL.md`, `docs\Guide_HPL_EN.md` · Desktop: `desktop\`
+- gh CLI: `C:\hack\tools\gh\bin\gh.exe` (zalogowany, keyring). Git credential helper ustawiony lokalnie w repo na gh.
+
 ## Repozytorium
 GitHub (publiczne): https://github.com/dominikmaslak11/hpl-studio
 
 ## Pozostaje na przyszłość
 - Most do debuggera w wersji desktop (sterowanie x64dbg z aplikacji).
-- Powrót do RE szyfru HPX: pokonanie „die-on-break" AJunk (TitanHide kernel — `sc start TitanHide`) i przechwycenie procedury deszyfracji.
+- Powrót do RE szyfru HPX: pokonanie „die-on-break" AJunk (TitanHide kernel — `sc start TitanHide` jako admin) i przechwycenie procedury deszyfracji.
+- Opcjonalnie: publiczne udostępnienie artefaktu (Share) dla klikalnego linku online; screenshoty do posta; wersja RU wiadomości.
 
 
 ## Uwaga prawna
