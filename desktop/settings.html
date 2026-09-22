@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="pl">
+<head>
+<meta charset="utf-8">
+<title>Ustawienia — klucze API</title>
+<style>
+  body{font-family:system-ui,Segoe UI,Roboto,sans-serif;margin:0;padding:20px;background:#1e1a14;color:#ece7dd}
+  h1{font-size:16px;margin:0 0 4px}
+  small{color:#9a9083;display:block;margin-bottom:10px}
+  label{display:block;margin:12px 0 4px;font-size:12px;color:#9a9083}
+  input{width:100%;box-sizing:border-box;padding:8px 10px;border-radius:8px;border:1px solid #332c22;background:#26211a;color:#ece7dd;font-family:ui-monospace,Consolas,monospace;font-size:13px}
+  .row{display:flex;gap:8px;margin-top:18px}
+  button{padding:9px 16px;border-radius:8px;border:1px solid #332c22;font-weight:600;cursor:pointer;font-size:13px}
+  #save{background:#f5932f;color:#161310;border-color:#f5932f}
+  #close{background:#26211a;color:#ece7dd}
+  .hint{font-size:11px;color:#6f675a;margin-top:6px}
+</style>
+</head>
+<body>
+  <h1>Klucze API</h1>
+  <small>Zapisywane lokalnie (katalog danych aplikacji). Wysyłane wyłącznie do wybranego API.</small>
+
+  <label>DeepSeek — klucz API <span class="hint">(platform.deepseek.com → API keys)</span></label>
+  <input id="dsKey" type="password" placeholder="sk-...">
+  <label>DeepSeek — model</label>
+  <input id="dsModel" placeholder="deepseek-chat">
+
+  <label>Claude (Anthropic) — klucz API <span class="hint">(console.anthropic.com)</span></label>
+  <input id="clKey" type="password" placeholder="sk-ant-...">
+  <label>Claude — model</label>
+  <input id="clModel" placeholder="claude-sonnet-5">
+
+  <div class="row">
+    <button id="save">Zapisz</button>
+    <button id="close">Zamknij</button>
+  </div>
+
+<script>
+  (async () => {
+    try {
+      const s = await window.hplNative.getSettings();
+      dsKey.value = s.deepseekKey || '';
+      dsModel.value = s.deepseekModel || 'deepseek-chat';
+      clKey.value = s.claudeKey || '';
+      clModel.value = s.claudeModel || 'claude-sonnet-5';
+    } catch (_) {}
+  })();
+  save.onclick = async () => {
+    await window.hplNative.setSettings({
+      deepseekKey: dsKey.value.trim(),
+      deepseekModel: dsModel.value.trim() || 'deepseek-chat',
+      claudeKey: clKey.value.trim(),
+      claudeModel: clModel.value.trim() || 'claude-sonnet-5'
+    });
+    window.close();
+  };
+  close.onclick = () => window.close();
+</script>
+</body>
+</html>

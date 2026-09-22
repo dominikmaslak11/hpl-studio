@@ -16,6 +16,7 @@
 | `examples/helloworld.hpl` | Minimalny skrypt „Hello World" (okno dialogowe). |
 | `examples/Z-MyScripts.cfg` | Przykład rejestracji skryptu w menu Orange5. |
 | `tools/x64dbg-mcp-bridge/plugin.cpp` | Poprawka mostu MCP dla x64dbg (naprawiony `attach` + komenda `waitpaused`). |
+| `desktop/` | Wersja desktop (Electron): natywny zapis plików + AI (DeepSeek/Claude po kluczu API). |
 
 ## HPL Studio — jak używać
 
@@ -40,7 +41,7 @@ Zacznij od `docs/Przewodnik_HPL_PL.md`. Rozdziały prowadzą od podstaw (piny, r
 - [x] **A** — Asystent AI (Claude) wbudowany w HPL Studio
 - [x] **B** — Tryb graficzny „klocki" (Scratch/FBD) jako opcja
 - [x] **C** — Wersja EN przewodnika (docs/Guide_HPL_EN.md)
-- [ ] **D** — Wersja lokalna (Electron): zapis plików, integracja DeepSeek, most do debuggera
+- [x] **D** — Wersja lokalna (Electron) w `desktop/`: natywny zapis plików + AI DeepSeek/Claude po kluczu API (most do debuggera: TODO)
 
 ## Licencja
 

@@ -618,6 +618,7 @@ $("#cfgCopy").addEventListener("click",()=>copyText($("#cfgOut").textContent,"Wp
 let downloads=null;(async()=>{try{downloads=await claude.use("downloads");}catch(_){}})();
 $("#dlBtn").addEventListener("click",async()=>{
   const name=$("#cfgFile").value.trim()||"my_script.hpl";
+  if(window.hplNative&&window.hplNative.saveFile){try{const p=await window.hplNative.saveFile({defaultName:name,data:code.value});if(p)toast("Zapisano: "+p);return;}catch(_){}}
   if(downloads){try{await downloads.save({filename:name,data:code.value});toast("Zapisano "+name+" ✓");return;}catch(_){}}
   copyText(code.value,".hpl (pobieranie niedostępne — skopiowano)");
 });
@@ -929,8 +930,10 @@ function renderAIFinal(text){
 }
 async function askAI(mode){
   if(aiBusy)return;
-  if($("#aiProvider").value==="deepseek"){aiOut('<div class="ai-msg">🔌 <b>DeepSeek</b> działa tylko w <b>wersji lokalnej</b> HPL Studio (aplikacja desktop). Przeglądarkowy artefakt blokuje połączenia sieciowe do API DeepSeek. W wersji lokalnej podasz swój <b>klucz API</b> (platform.deepseek.com → API keys) w ustawieniach — DeepSeek nie ma logowania przez przeglądarkę, wyłącznie klucz API. Na razie użyj <b>Claude</b> (działa tutaj bez klucza).</div>');return;}
-  if(!sampleCap){aiOut('<div class="ai-msg">Asystent Claude działa w <b>opublikowanej</b> wersji HPL Studio (na claude.ai) i wymaga zgody. Otwórz opublikowaną stronę i spróbuj ponownie.</div>');return;}
+  const useNative=!!(window.hplNative&&window.hplNative.ai);
+  const provider=$("#aiProvider").value;
+  if(provider==="deepseek"&&!useNative){aiOut('<div class="ai-msg">🔌 <b>DeepSeek</b> działa tylko w <b>wersji lokalnej</b> HPL Studio (aplikacja desktop). Przeglądarkowy artefakt blokuje połączenia sieciowe do API DeepSeek. W wersji lokalnej podasz swój <b>klucz API</b> (platform.deepseek.com → API keys) — DeepSeek nie ma logowania przez przeglądarkę, wyłącznie klucz API. Na razie użyj <b>Claude</b> (działa tutaj bez klucza).</div>');return;}
+  if(!useNative&&!sampleCap){aiOut('<div class="ai-msg">Asystent Claude działa w <b>opublikowanej</b> wersji HPL Studio (na claude.ai) i wymaga zgody. Otwórz opublikowaną stronę i spróbuj ponownie.</div>');return;}
   const desc=$("#aiPrompt").value.trim();let task,includeCode=true;
   if(mode==="explain")task="Wyjaśnij ten skrypt HPL krok po kroku.";
   else if(mode==="fix")task="Znajdź i wyjaśnij błędy w tym skrypcie HPL, potem podaj poprawioną wersję w bloku ```hpl.";
@@ -940,9 +943,13 @@ async function askAI(mode){
   const codePart=includeCode?("\n\nBieżący skrypt użytkownika:\n```hpl\n"+code.value+"\n```"):"";
   const prompt=HPL_PRIMER+"\n\nOdpowiadaj po polsku, zwięźle i konkretnie. "+task+codePart;
   aiBusy=true;$("#aiSend").disabled=true;aiOut('<div class="ai-msg">✦ Claude myśli…</div>');
-  try{const r=await sampleCap(prompt,{modelTier:"default",onText:({text})=>aiStream(text)});renderAIFinal((r&&r.text)||"");}
+  try{
+    if(useNative){const r=await window.hplNative.ai({provider,prompt});renderAIFinal((r&&(r.text||r))||"");}
+    else{const r=await sampleCap(prompt,{modelTier:"default",onText:({text})=>aiStream(text)});renderAIFinal((r&&r.text)||"");}
+  }
   catch(e){const c=e&&e.code;
-    if(c==="not_granted")aiOut('<div class="ai-msg">Brak zgody na Asystenta AI — możesz ją przyznać przy kolejnej próbie.</div>');
+    if(c==="no_key"||/klucz|api key/i.test(e&&e.message||""))aiOut('<div class="ai-msg">Brak klucza API dla '+provider+'. Ustaw go w menu <b>Ustawienia → Klucze API</b>.</div>');
+    else if(c==="not_granted")aiOut('<div class="ai-msg">Brak zgody na Asystenta AI — możesz ją przyznać przy kolejnej próbie.</div>');
     else if(c==="rate_limited")aiOut('<div class="ai-msg">Zbyt wiele zapytań naraz — spróbuj za chwilę.</div>');
     else aiOut('<div class="ai-msg">Nie udało się uzyskać odpowiedzi'+(e&&e.message?": "+esc(e.message):"")+'.</div>');}
   finally{aiBusy=false;$("#aiSend").disabled=false;}

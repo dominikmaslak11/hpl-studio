@@ -1,0 +1,14 @@
+{
+  "name": "hpl-studio-desktop",
+  "version": "0.1.0",
+  "description": "HPL Studio — desktopowa wersja (Electron): natywny zapis plikow i asystent AI (DeepSeek/Claude) przez klucze API.",
+  "main": "main.js",
+  "author": "dominikmaslak11",
+  "license": "MIT",
+  "scripts": {
+    "start": "electron ."
+  },
+  "devDependencies": {
+    "electron": "^32.0.0"
+  }
+}
