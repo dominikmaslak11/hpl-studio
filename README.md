@@ -50,10 +50,10 @@ Zacznij od `docs/Przewodnik_HPL_PL.md`. Rozdziały prowadzą od podstaw (piny, r
 - [x] **D** — Wersja lokalna (Electron) w `desktop/`: natywny zapis plików + AI DeepSeek/Claude po kluczu API (most do debuggera: TODO)
 - [x] Przełącznik języka **Polski/English** + otwieranie plików `.hpl` z dysku
 
+- [x] Linter semantyczny (nieznany podprogram, zapis do pinu wejściowego, nieokreślone makro, indeks bitu, nieznany pin)
+- [x] Wirtualny układ 24C02 (I2C) w debuggerze — test bench sprawdzający odczyt/zapis logicznie
 ## Licencja
 
 MIT (patrz `LICENSE`) — dotyczy oryginalnej pracy w tym repozytorium.
 
 Uwaga: `tools/x64dbg-mcp-bridge/plugin.cpp` korzysta z pluginowego SDK x64dbg; x64dbg jest na licencji GPLv3. Plik jest tu jako łatka referencyjna.
-- [x] Linter semantyczny (nieznany podprogram, zapis do pinu wejściowego, nieokreślone makro, indeks bitu, nieznany pin)
-- [x] Wirtualny układ 24C02 (I2C) w debuggerze — test bench sprawdzający odczyt/zapis logicznie
