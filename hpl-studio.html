@@ -192,6 +192,15 @@
   .tut-content pre{background:var(--panel2);border:1px solid var(--border);border-radius:8px;padding:10px 12px;
     font-family:var(--mono);font-size:12px;overflow:auto;margin:0 0 10px}
   .tut-content .tags{color:var(--muted);font-size:12px}
+  /* AI assistant */
+  .ai{display:flex;flex-direction:column;height:100%;padding:10px 12px;gap:8px}
+  .ai-actions{display:flex;flex-wrap:wrap;gap:6px}
+  .ai-input{display:flex;gap:8px}
+  .ai-input textarea{flex:1;min-height:38px;max-height:110px;resize:vertical;background:var(--panel2);color:var(--text);border:1px solid var(--border);border-radius:8px;padding:8px 10px;font-family:var(--sans);font-size:13px}
+  .ai-out{flex:1;overflow:auto;background:var(--panel2);border:1px solid var(--border);border-radius:8px;padding:10px 12px;font-size:13px;line-height:1.55}
+  .ai-out pre{background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:10px;overflow:auto;font-family:var(--mono);font-size:12px;margin:6px 0}
+  .ai-hint,.ai-msg{color:var(--muted)} .ai-msg{font-style:italic}
+  .ai-code-insert{margin:0 0 8px}
 
   .statusbar{display:flex;align-items:center;gap:14px;flex-wrap:wrap;padding:6px 14px;
     background:var(--panel2);border-top:1px solid var(--border);font-family:var(--mono);
@@ -297,6 +306,7 @@
         <button class="tab active" data-pane="paneDbg">Debugger</button>
         <button class="tab" data-pane="paneProb">Problemy <span class="badge" id="probBadge" hidden>0</span></button>
         <button class="tab" data-pane="paneTut">Samouczek</button>
+        <button class="tab" data-pane="paneAI">✦ Asystent AI</button>
         <div class="runbar">
           <select id="runSection" class="txt" style="padding:4px 7px" title="Sekcja do uruchomienia"></select>
           <button class="btn sm" id="runBtn" title="Uruchom">▶ Run</button>
@@ -317,6 +327,21 @@
         </div>
         <div class="pane" id="paneProb"><div class="problems" id="problems"></div></div>
         <div class="pane" id="paneTut"><div class="tut"><div class="tut-list" id="tutList"></div><div class="tut-content" id="tutContent"></div></div></div>
+        <div class="pane" id="paneAI">
+          <div class="ai">
+            <div class="ai-actions">
+              <button class="btn sm" data-ai="explain">Wyjaśnij skrypt</button>
+              <button class="btn sm" data-ai="generate">Wygeneruj z opisu</button>
+              <button class="btn sm" data-ai="fix">Znajdź błąd</button>
+              <button class="btn sm" data-ai="comment">Skomentuj</button>
+            </div>
+            <div class="ai-input">
+              <textarea id="aiPrompt" placeholder="Opisz, czego potrzebujesz — np. „odczyt EEPROM 93C46" — albo zadaj pytanie o HPL…"></textarea>
+              <button class="btn primary" id="aiSend">Zapytaj Claude</button>
+            </div>
+            <div class="ai-out" id="aiOut"><div class="ai-hint">✦ Asystent Claude pomoże <b>wyjaśnić</b>, <b>wygenerować</b> lub <b>poprawić</b> skrypt HPL. Działa w opublikowanej wersji strony; pierwsze użycie poprosi o zgodę.</div></div>
+          </div>
+        </div>
       </div>
     </div>
 
@@ -837,6 +862,44 @@ function showTut(i){const l=TUT[i];tl.querySelectorAll("button").forEach((b,j)=>
   tc.innerHTML=`<h3>${esc(l.h)}</h3>`+l.p.map(x=>`<p>${esc(x)}</p>`).join("")+`<pre>${esc(l.code)}</pre>`;
   const btn=document.createElement("button");btn.className="btn sm";btn.textContent="Wstaw przykład do edytora";btn.addEventListener("click",()=>insertBlock(l.code));tc.appendChild(btn);}
 showTut(0);
+
+/* ═══════════════════════════ Asystent AI (Claude via sample) ═══════════════════════════ */
+let sampleCap=null,aiBusy=false,aiCode={};
+(async()=>{try{sampleCap=await claude.use("sample");}catch(_){}})();
+const HPL_PRIMER='Jesteś ekspertem języka HPL programatora Orange5. HPL to język bit-bang. Nagłówek: INFO="..", SOCKET=n (0 zwykłe,1 I2C,2 Microwire,4 SPI), CDELAY=n, piny PINO=NAME,n (wyjście), PINI=NAME,n (wejście), PING=NAME,n (dwukierunkowy), #NAME=odwrócony. Sterowanie pinem: NAME=1/0, NAME=P (impuls 0-1-0), NAME=R0[i]. Rejestry R0..RF 32-bit, DATA, ADR, RA (wynik Ask), licznik I; bit: R0[i]. Liczby: 0x1F / 1FH / 1010B / dec. Matematyka w miejscu na lewym rejestrze: R0=+1, R0=-2, R0=&v, R0=|v, R0=^v, R0=<<n, R0=>>n, R0=*Rx, R0=/Rx, R0=%Rx, R7=Rx. Pętle: LOOP=(a,b){...} (I biegnie a..b, w górę lub w dół), LOOP=(N){...} lub LOOP(Rx){...} (N powtórzeń). Warunki: X?v{...} (==), X?!v (≠), X?<v, X?>v; X to rejestr, bit lub pin. BREAK, EXIT, P=n (pauza). Podprogramy: sekcja [_NAME]; wywołanie _NAME lub _NAME(arg) (arg trafia do R0). Dialogi: PRINT=("tekst") oraz I()/E()/A()/S()/L(); A() daje OK/Anuluj w RA (1/0); GET=("..",Rx); format jak printf: %lu %08lX \\n. Sekcje operacji: [!SETUP] [INIT] [READ] [READBLOCK] [WRITE] [WRITEBLOCK] [ERASE] [END]. Rejestracja w menu: linia CHIP=nazwa,rozmiar,plik.hpl w pliku .cfg.';
+function aiOut(html){$("#aiOut").innerHTML=html;$("#aiOut").scrollTop=$("#aiOut").scrollHeight;}
+function aiStream(text){aiOut(`<div>${esc(text).replace(/\n/g,"<br>")}</div>`);}
+function renderAIFinal(text){
+  aiCode={};let html="",last=0,idx=0;const re=/```(?:\w+)?\r?\n([\s\S]*?)```/g;let m;
+  while(m=re.exec(text)){html+=`<div>${esc(text.slice(last,m.index)).replace(/\n/g,"<br>")}</div>`;
+    const codeTxt=m[1].replace(/\r?\n$/,"");const id="aic"+(idx++);aiCode[id]=codeTxt;
+    html+=`<pre>${esc(codeTxt)}</pre><button class="btn sm ai-code-insert" data-code="${id}">Wstaw do edytora</button>`;last=re.lastIndex;}
+  html+=`<div>${esc(text.slice(last)).replace(/\n/g,"<br>")}</div>`;
+  aiOut(html);
+  $("#aiOut").querySelectorAll(".ai-code-insert").forEach(b=>b.addEventListener("click",()=>{const c=aiCode[b.dataset.code];if(c&&(!code.value.trim()||confirm("Zastąpić kod w edytorze wygenerowanym skryptem?"))){code.value=c;refresh();updateCursor();toast("Wstawiono kod z Asystenta");}}));
+}
+async function askAI(mode){
+  if(aiBusy)return;
+  if(!sampleCap){aiOut('<div class="ai-msg">Asystent AI działa w <b>opublikowanej</b> wersji HPL Studio (na claude.ai) i wymaga zgody. Otwórz opublikowaną stronę i spróbuj ponownie.</div>');return;}
+  const desc=$("#aiPrompt").value.trim();let task,includeCode=true;
+  if(mode==="explain")task="Wyjaśnij ten skrypt HPL krok po kroku.";
+  else if(mode==="fix")task="Znajdź i wyjaśnij błędy w tym skrypcie HPL, potem podaj poprawioną wersję w bloku ```hpl.";
+  else if(mode==="comment")task="Dodaj czytelne polskie komentarze do tego skryptu HPL. Zwróć CAŁY skrypt w jednym bloku ```hpl.";
+  else if(mode==="generate"){includeCode=false;if(!desc){aiOut('<div class="ai-msg">Wpisz opis skryptu w polu powyżej (np. „odczyt EEPROM 93C46").</div>');return;}task="Wygeneruj kompletny, poprawny skrypt HPL dla: "+desc+". Podaj go w jednym bloku ```hpl, a pod nim krótkie wyjaśnienie.";}
+  else{if(!desc){aiOut('<div class="ai-msg">Wpisz pytanie w polu powyżej.</div>');return;}task=desc;}
+  const codePart=includeCode?("\n\nBieżący skrypt użytkownika:\n```hpl\n"+code.value+"\n```"):"";
+  const prompt=HPL_PRIMER+"\n\nOdpowiadaj po polsku, zwięźle i konkretnie. "+task+codePart;
+  aiBusy=true;$("#aiSend").disabled=true;aiOut('<div class="ai-msg">✦ Claude myśli…</div>');
+  try{const r=await sampleCap(prompt,{modelTier:"default",onText:({text})=>aiStream(text)});renderAIFinal((r&&r.text)||"");}
+  catch(e){const c=e&&e.code;
+    if(c==="not_granted")aiOut('<div class="ai-msg">Brak zgody na Asystenta AI — możesz ją przyznać przy kolejnej próbie.</div>');
+    else if(c==="rate_limited")aiOut('<div class="ai-msg">Zbyt wiele zapytań naraz — spróbuj za chwilę.</div>');
+    else aiOut('<div class="ai-msg">Nie udało się uzyskać odpowiedzi'+(e&&e.message?": "+esc(e.message):"")+'.</div>');}
+  finally{aiBusy=false;$("#aiSend").disabled=false;}
+}
+document.querySelectorAll("[data-ai]").forEach(b=>b.addEventListener("click",()=>{switchPane("paneAI");askAI(b.dataset.ai);}));
+$("#aiSend").addEventListener("click",()=>askAI("ask"));
+$("#aiPrompt").addEventListener("keydown",e=>{if(e.key==="Enter"&&(e.ctrlKey||e.metaKey)){e.preventDefault();askAI("ask");}});
 
 /* ═══════════════════════════ Persistence / boot ═══════════════════════════ */
 function saveDraft(){try{localStorage.setItem("hpl_draft",code.value);}catch(_){}}
