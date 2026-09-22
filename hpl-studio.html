@@ -201,6 +201,32 @@
   .ai-out pre{background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:10px;overflow:auto;font-family:var(--mono);font-size:12px;margin:6px 0}
   .ai-hint,.ai-msg{color:var(--muted)} .ai-msg{font-style:italic}
   .ai-code-insert{margin:0 0 8px}
+  /* Bloki (modal) */
+  .modal{position:fixed;inset:0;z-index:70;background:rgba(0,0,0,.5);display:none;padding:16px;
+    padding-top:calc(16px + env(safe-area-inset-top,0px))}
+  .modal.open{display:flex;align-items:stretch;justify-content:center}
+  .modal-box{background:var(--panel);border:1px solid var(--border);border-radius:14px;box-shadow:var(--shadow);
+    width:min(1080px,100%);display:flex;flex-direction:column;overflow:hidden;max-height:100%}
+  .modal-head{display:flex;align-items:center;gap:10px;padding:12px 16px;border-bottom:1px solid var(--border)}
+  .modal-head h2{margin:0;font-size:16px} .mh-sub{font-size:12px;color:var(--muted)} .modal-head .close{margin-left:auto}
+  .modal-body{flex:1;display:grid;grid-template-columns:minmax(0,1fr) 300px;min-height:0}
+  .blk-work,.blk-prev{overflow:auto;padding:12px 14px}
+  .blk-work{background:var(--bg)} .blk-prev{border-left:1px solid var(--border);font-family:var(--mono);font-size:12px;white-space:pre-wrap;line-height:1.5}
+  .blk-work h3,.blk-prev h3{font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin:0 0 8px}
+  .node{background:var(--panel);border:1px solid var(--border);border-left:3px solid var(--accent);border-radius:8px;padding:7px 9px;margin:0 0 7px}
+  .node.container{border-left-color:var(--t-reg)}
+  .nhead{display:flex;align-items:center;gap:7px;flex-wrap:wrap}
+  .nlabel{font-weight:600;font-size:12.5px}
+  .node input,.node select{background:var(--panel2);border:1px solid var(--border);border-radius:6px;padding:3px 6px;font-size:12px;color:var(--text);font-family:var(--mono)}
+  .node input{width:78px}
+  .node .del{margin-left:auto;background:none;border:0;color:var(--muted);cursor:pointer;font-size:14px;line-height:1}
+  .node .del:hover{color:var(--err)}
+  .kids{margin:8px 0 2px 10px;border-left:2px dashed var(--border);padding-left:10px}
+  .addsel{margin:2px 0 6px;font-size:12px;background:var(--panel2);border:1px dashed var(--border);
+    border-radius:7px;padding:5px 8px;color:var(--muted);font-family:var(--sans)}
+  .modal-foot{display:flex;gap:8px;justify-content:flex-end;padding:12px 16px;border-top:1px solid var(--border)}
+  @media(max-width:820px){.modal-body{grid-template-columns:1fr;grid-auto-rows:minmax(120px,auto)}
+    .blk-prev{border-left:0;border-top:1px solid var(--border)}}
 
   .statusbar{display:flex;align-items:center;gap:14px;flex-wrap:wrap;padding:6px 14px;
     background:var(--panel2);border-top:1px solid var(--border);font-family:var(--mono);
@@ -286,6 +312,7 @@
   <section class="col center" aria-label="Edytor">
     <div class="editor-toolbar">
       <span class="name"><span class="dot" id="savedDot"></span><span id="fileName">nowy_skrypt.hpl</span></span>
+      <button class="btn sm" id="blocksBtn" title="Programowanie blokami (opcja)">🧩 Bloki</button>
       <button class="btn sm" id="fmtBtn">Porządkuj</button>
       <button class="btn sm" id="clearBtn">Wyczyść</button>
     </div>
@@ -374,6 +401,24 @@
     <div class="block"><h2>Ściąga HPL</h2><div id="refList"></div></div>
   </section>
 </main>
+
+<div class="modal" id="blkModal">
+  <div class="modal-box">
+    <div class="modal-head">
+      <h2>🧩 Programowanie blokami</h2>
+      <span class="mh-sub">Buduj skrypt z klocków — na żywo generuje HPL</span>
+      <button class="btn sm close" id="blkClose">✕ Zamknij</button>
+    </div>
+    <div class="modal-body">
+      <div class="blk-work"><h3>Bloki (dodawaj przez „＋ dodaj blok…")</h3><div id="blkWork"></div></div>
+      <div class="blk-prev"><h3>Podgląd HPL</h3><div id="blkPrev"></div></div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn" id="blkClear2">Wyczyść bloki</button>
+      <button class="btn primary" id="blkInsert">Wstaw do edytora →</button>
+    </div>
+  </div>
+</div>
 
 <div class="toast" id="toast"></div>
 
@@ -905,6 +950,64 @@ async function askAI(mode){
 document.querySelectorAll("[data-ai]").forEach(b=>b.addEventListener("click",()=>{switchPane("paneAI");askAI(b.dataset.ai);}));
 $("#aiSend").addEventListener("click",()=>askAI("ask"));
 $("#aiPrompt").addEventListener("keydown",e=>{if(e.key==="Enter"&&(e.ctrlKey||e.metaKey)){e.preventDefault();askAI("ask");}});
+
+/* ═══════════════════════════ Programowanie blokami (opcja) ═══════════════════════════ */
+const BLOCKS={
+  section:{label:"Sekcja [ ]",fields:[{k:"name",t:"text",v:"READ"}],toHPL:p=>`[${p.name}]`},
+  comment:{label:"Komentarz",fields:[{k:"text",t:"text",v:"opis"}],toHPL:p=>`; ${p.text}`},
+  pinset:{label:"Ustaw pin",fields:[{k:"pin",t:"text",v:"CLK"},{k:"val",t:"select",opts:["1","0"],v:"1"}],toHPL:p=>`${p.pin}=${p.val}`},
+  pulse:{label:"Impuls zegara",fields:[{k:"pin",t:"text",v:"CLK"}],toHPL:p=>`${p.pin}=P`},
+  regset:{label:"Rejestr = wartość",fields:[{k:"reg",t:"text",v:"R0"},{k:"val",t:"text",v:"0x00"}],toHPL:p=>`${p.reg}=${p.val}`},
+  regop:{label:"Rejestr: operacja",fields:[{k:"reg",t:"text",v:"R0"},{k:"op",t:"select",opts:["+","-","&","|","^","<<",">>","*","/","%"],v:"+"},{k:"val",t:"text",v:"1"}],toHPL:p=>`${p.reg}=${p.op}${p.val}`},
+  sendbyte:{label:"Wyślij bajt (MSB→LSB)",fields:[{k:"data",t:"text",v:"DI"},{k:"clk",t:"text",v:"CLK"},{k:"src",t:"text",v:"R0"}],toHPL:p=>`LOOP=(7,0){${p.data}=${p.src}[I],${p.clk}=P}`},
+  readbyte:{label:"Czytaj bajt",fields:[{k:"clk",t:"text",v:"CLK"},{k:"din",t:"text",v:"DO"},{k:"dst",t:"text",v:"DATA"}],toHPL:p=>`LOOP=(7,0){${p.clk}=1,${p.dst}[I]=${p.din},${p.clk}=0}`},
+  loop:{label:"Pętla LOOP",container:true,fields:[{k:"a",t:"text",v:"7"},{k:"b",t:"text",v:"0"}],toHPL:(p,ch,ind)=>`LOOP=(${p.a},${p.b}){\n${ch}\n${ind}}`},
+  loopn:{label:"Powtórz N razy",container:true,fields:[{k:"n",t:"text",v:"$BLOCKSIZE"}],toHPL:(p,ch,ind)=>`LOOP=(${p.n}){\n${ch}\n${ind}}`},
+  ifb:{label:"Warunek ?",container:true,fields:[{k:"x",t:"text",v:"R0"},{k:"op",t:"select",opts:["=","≠","<",">"],v:"="},{k:"val",t:"text",v:"0"}],toHPL:(p,ch,ind)=>{const o=p.op==="≠"?"?!":p.op==="<"?"?<":p.op===">"?"?>":"?";return `${p.x}${o}${p.val}{\n${ch}\n${ind}}`;}},
+  callsub:{label:"Wywołaj podprogram",fields:[{k:"name",t:"text",v:"_SEND"},{k:"arg",t:"text",v:""}],toHPL:p=>`${p.name}${p.arg?"("+p.arg+")":""}`},
+  print:{label:"Okno PRINT",fields:[{k:"kind",t:"select",opts:["","I","E","A"],v:""},{k:"text",t:"text",v:"Tekst"}],toHPL:p=>`PRINT=${p.kind}("${p.text}")`},
+  pause:{label:"Pauza P=",fields:[{k:"n",t:"text",v:"1000"}],toHPL:p=>`P=${p.n}`},
+  brk:{label:"BREAK",fields:[],toHPL:()=>"BREAK"},
+  ex:{label:"EXIT",fields:[],toHPL:()=>"EXIT"},
+  raw:{label:"Własny wiersz HPL",fields:[{k:"code",t:"text",v:""}],toHPL:p=>p.code}
+};
+let blkTree=[],blkId=0;
+function blkNew(type){const b=BLOCKS[type];const params={};(b.fields||[]).forEach(f=>params[f.k]=f.v);return{id:++blkId,type,params,children:b.container?[]:null};}
+function blkRender(){const w=$("#blkWork");w.innerHTML="";w.appendChild(blkList(blkTree));blkPreview();}
+function blkList(arr){const frag=document.createElement("div");arr.forEach(n=>frag.appendChild(blkNode(n,arr)));frag.appendChild(blkAdd(arr));return frag;}
+function blkNode(node,parentArr){
+  const b=BLOCKS[node.type];const el=document.createElement("div");el.className="node"+(b.container?" container":"");
+  const head=document.createElement("div");head.className="nhead";
+  const lab=document.createElement("span");lab.className="nlabel";lab.textContent=b.label;head.appendChild(lab);
+  (b.fields||[]).forEach(f=>{let inp;
+    if(f.t==="select"){inp=document.createElement("select");f.opts.forEach(o=>{const op=document.createElement("option");op.value=o;op.textContent=o||"(zwykłe)";inp.appendChild(op);});}
+    else inp=document.createElement("input");
+    inp.value=node.params[f.k];inp.title=f.k;inp.placeholder=f.k;
+    const upd=()=>{node.params[f.k]=inp.value;blkPreview();};
+    inp.addEventListener("input",upd);inp.addEventListener("change",upd);head.appendChild(inp);});
+  const del=document.createElement("button");del.className="del";del.textContent="✕";del.title="Usuń blok";
+  del.addEventListener("click",()=>{const i=parentArr.indexOf(node);if(i>=0)parentArr.splice(i,1);blkRender();});
+  head.appendChild(del);el.appendChild(head);
+  if(b.container){const kids=document.createElement("div");kids.className="kids";kids.appendChild(blkList(node.children));el.appendChild(kids);}
+  return el;
+}
+function blkAdd(arr){
+  const sel=document.createElement("select");sel.className="addsel";
+  const ph=document.createElement("option");ph.value="";ph.textContent="＋ dodaj blok…";sel.appendChild(ph);
+  Object.entries(BLOCKS).forEach(([k,b])=>{const o=document.createElement("option");o.value=k;o.textContent=b.label;sel.appendChild(o);});
+  sel.addEventListener("change",()=>{if(sel.value){arr.push(blkNew(sel.value));blkRender();}});
+  return sel;
+}
+function blkGen(arr,ind){return arr.map(node=>{const b=BLOCKS[node.type];
+  if(b.container){const ch=blkGen(node.children,ind+"  ");return ind+b.toHPL(node.params,ch,ind);}
+  return ind+b.toHPL(node.params);}).join("\n");}
+function blkPreview(){$("#blkPrev").textContent=blkGen(blkTree,"")||"; (dodaj bloki po lewej)";}
+$("#blocksBtn").addEventListener("click",()=>{if(!blkTree.length)blkTree=[blkNew("section"),blkNew("pinset")];$("#blkModal").classList.add("open");blkRender();});
+$("#blkClose").addEventListener("click",()=>$("#blkModal").classList.remove("open"));
+$("#blkClear2").addEventListener("click",()=>{blkTree=[];blkRender();});
+$("#blkInsert").addEventListener("click",()=>{const hpl=blkGen(blkTree,"");if(!hpl.trim()){toast("Brak bloków");return;}insertBlock("\n"+hpl+"\n");$("#blkModal").classList.remove("open");toast("Wstawiono bloki jako HPL ✓");});
+$("#blkModal").addEventListener("click",e=>{if(e.target.id==="blkModal")$("#blkModal").classList.remove("open");});
+document.addEventListener("keydown",e=>{if(e.key==="Escape"&&$("#blkModal").classList.contains("open"))$("#blkModal").classList.remove("open");});
 
 /* ═══════════════════════════ Persistence / boot ═══════════════════════════ */
 function saveDraft(){try{localStorage.setItem("hpl_draft",code.value);}catch(_){}}

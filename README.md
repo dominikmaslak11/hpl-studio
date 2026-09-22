@@ -37,7 +37,7 @@ Zacznij od `docs/Przewodnik_HPL_PL.md`. Rozdziały prowadzą od podstaw (piny, r
 - [x] HPL Studio: edytor, kolorowanie, autocomplete, debugger, walidator, samouczek, motywy
 - [x] Przewodnik HPL (PL)
 - [x] **A** — Asystent AI (Claude) wbudowany w HPL Studio
-- [ ] **B** — Tryb graficzny „klocki" (Scratch/FBD) jako opcja
+- [x] **B** — Tryb graficzny „klocki" (Scratch/FBD) jako opcja
 - [ ] **C** — Wersja EN przewodnika
 - [ ] **D** — Wersja lokalna (Electron): zapis plików, integracja DeepSeek, most do debuggera
 
