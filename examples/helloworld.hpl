@@ -1,0 +1,31 @@
+; ============================================================
+; Hello World - przyklad skryptu HPL dla Orange5
+; (c) 2026  <Twoj nick>
+; CHIP=Hello World,256,helloworld.hpl
+; ============================================================
+;
+; Rejestracja w menu (w dowolnym pliku *.cfg):
+;   GROUP=MojeSkrypty
+;   CHIP=Hello World,256,helloworld.hpl
+;
+; Po wybraniu chipu "Hello World" z menu i klikniciu funkcji
+; ponizej, Orange5 pokaze okno dialogowe z tekstem.
+
+INFO="Moj pierwszy skrypt - pokazuje Hello World!"
+
+SOCKET=0
+
+; --- Funkcja pojawi sie jako przycisk/pozycja skryptu w GUI ---
+[Hello]
+PRINT=("Hello World!")
+
+; --- Warianty okien dialogowych (do nauki) ---
+[Warianty]
+PRINT=("Zwykle okno: Hello World!")
+PRINT=I("Okno Info: Hello World!")
+PRINT=E("Okno Blad: Hello World!")
+PRINT=A("Okno Pytanie: kliknij OK lub Anuluj")
+RA?1{PRINT=("Wybrales OK")}
+RA?0{PRINT=("Wybrales Anuluj")}
+
+[END]

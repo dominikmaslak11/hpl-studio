@@ -1,0 +1,21 @@
+# build artifacts
+*.o
+*.obj
+*.dp32
+*.dp64
+*.exe
+*.dll
+*.a
+*.lib
+*.exp
+*.pdb
+# os / editor
+.DS_Store
+Thumbs.db
+*.swp
+.vscode/
+.idea/
+# temp
+*.log
+*.tmp
+node_modules/
