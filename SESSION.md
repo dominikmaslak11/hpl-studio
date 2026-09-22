@@ -55,14 +55,20 @@ Zapis prac nad narzędziami i dokumentacją HPL dla Orange5 oraz analizą format
 
 ---
 
-## Roadmap (do zrobienia)
+## Roadmap — ZREALIZOWANE
 
-- **A** — Asystent AI (Claude) w HPL Studio przez możliwość `sample` (bez klucza API). DeepSeek **niemożliwy** w sandboxie webowym (blokada sieci) — tylko w wersji lokalnej.
-- **B** — Tryb graficzny „klocki" (Scratch/FBD) jako opcja, generujący HPL.
-- **C** — Angielska wersja przewodnika.
-- **D** — Wersja lokalna (Electron): prawdziwy zapis plików, integracja DeepSeek, most do debuggera.
+- [x] **A** — Asystent AI (Claude) w HPL Studio przez możliwość `sample` (web, bez klucza). Wybór modelu Claude/DeepSeek; DeepSeek w wersji lokalnej.
+- [x] **B** — Tryb graficzny „klocki" (Scratch/FBD) jako opcja (modal generujący HPL).
+- [x] **C** — Angielska wersja przewodnika (`docs/Guide_HPL_EN.md`).
+- [x] **D** — Wersja lokalna (Electron) w `desktop/`: natywny zapis plików + AI DeepSeek/Claude po kluczu API.
 
----
+## Repozytorium
+GitHub (publiczne): https://github.com/dominikmaslak11/hpl-studio
+
+## Pozostaje na przyszłość
+- Most do debuggera w wersji desktop (sterowanie x64dbg z aplikacji).
+- Powrót do RE szyfru HPX: pokonanie „die-on-break" AJunk (TitanHide kernel — `sc start TitanHide`) i przechwycenie procedury deszyfracji.
+
 
 ## Uwaga prawna
 Repozytorium zawiera wyłącznie oryginalną pracę autora. Nie zawiera zastrzeżonych plików Orange5. Inżynieria wsteczna prowadzona dla interoperacyjności na własnym, legalnie posiadanym sprzęcie/oprogramowaniu.
