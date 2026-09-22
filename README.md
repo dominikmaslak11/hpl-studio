@@ -55,3 +55,5 @@ Zacznij od `docs/Przewodnik_HPL_PL.md`. Rozdziały prowadzą od podstaw (piny, r
 MIT (patrz `LICENSE`) — dotyczy oryginalnej pracy w tym repozytorium.
 
 Uwaga: `tools/x64dbg-mcp-bridge/plugin.cpp` korzysta z pluginowego SDK x64dbg; x64dbg jest na licencji GPLv3. Plik jest tu jako łatka referencyjna.
+- [x] Linter semantyczny (nieznany podprogram, zapis do pinu wejściowego, nieokreślone makro, indeks bitu, nieznany pin)
+- [x] Wirtualny układ 24C02 (I2C) w debuggerze — test bench sprawdzający odczyt/zapis logicznie

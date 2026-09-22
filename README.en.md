@@ -59,3 +59,5 @@ See `desktop/README.md`. Runs HPL Studio outside the browser sandbox, adding nat
 MIT (see `LICENSE`) — covers the original work in this repository.
 
 Note: `tools/x64dbg-mcp-bridge/plugin.cpp` uses the x64dbg plugin SDK; x64dbg is GPLv3-licensed. The file is included here as a reference patch.
+- [x] Semantic linter (unknown subroutine, write to input pin, undefined macro, bit index, unknown pin)
+- [x] Virtual 24C02 (I2C) chip in the debugger — a test bench that verifies read/write logically
