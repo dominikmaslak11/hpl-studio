@@ -330,6 +330,10 @@
         <div class="pane" id="paneAI">
           <div class="ai">
             <div class="ai-actions">
+              <select id="aiProvider" class="txt" style="padding:5px 8px" title="Wybór modelu AI">
+                <option value="claude">Claude (web, bez klucza)</option>
+                <option value="deepseek">DeepSeek (wersja lokalna)</option>
+              </select>
               <button class="btn sm" data-ai="explain">Wyjaśnij skrypt</button>
               <button class="btn sm" data-ai="generate">Wygeneruj z opisu</button>
               <button class="btn sm" data-ai="fix">Znajdź błąd</button>
@@ -880,7 +884,8 @@ function renderAIFinal(text){
 }
 async function askAI(mode){
   if(aiBusy)return;
-  if(!sampleCap){aiOut('<div class="ai-msg">Asystent AI działa w <b>opublikowanej</b> wersji HPL Studio (na claude.ai) i wymaga zgody. Otwórz opublikowaną stronę i spróbuj ponownie.</div>');return;}
+  if($("#aiProvider").value==="deepseek"){aiOut('<div class="ai-msg">🔌 <b>DeepSeek</b> działa tylko w <b>wersji lokalnej</b> HPL Studio (aplikacja desktop). Przeglądarkowy artefakt blokuje połączenia sieciowe do API DeepSeek. W wersji lokalnej podasz swój <b>klucz API</b> (platform.deepseek.com → API keys) w ustawieniach — DeepSeek nie ma logowania przez przeglądarkę, wyłącznie klucz API. Na razie użyj <b>Claude</b> (działa tutaj bez klucza).</div>');return;}
+  if(!sampleCap){aiOut('<div class="ai-msg">Asystent Claude działa w <b>opublikowanej</b> wersji HPL Studio (na claude.ai) i wymaga zgody. Otwórz opublikowaną stronę i spróbuj ponownie.</div>');return;}
   const desc=$("#aiPrompt").value.trim();let task,includeCode=true;
   if(mode==="explain")task="Wyjaśnij ten skrypt HPL krok po kroku.";
   else if(mode==="fix")task="Znajdź i wyjaśnij błędy w tym skrypcie HPL, potem podaj poprawioną wersję w bloku ```hpl.";
