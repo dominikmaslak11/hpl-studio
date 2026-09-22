@@ -2,6 +2,8 @@
 
 **Nowoczesne, przyjazne początkującym środowisko do tworzenia skryptów HPL dla programatora Orange5** — plus przewodnik po języku HPL oparty na prawdziwych skryptach.
 
+*Języki / Languages:* **Polski** · [English](README.en.md)
+
 > To niezależny, otwarty projekt narzędzi i dokumentacji. **Nie jest** powiązany z producentem Orange5 i **nie zawiera** żadnych zastrzeżonych plików Orange5 (`orange.exe`, `AJunk.dll`, plików `.hpx/.hhh`, tokenów `DATA\SSS` ani skryptów producenta). Zawiera wyłącznie oryginalną pracę autora.
 
 ---
@@ -28,6 +30,10 @@
 - **Walidator** — sprawdza nawiasy, cudzysłowy, strukturę sekcji.
 - **Samouczek** — 8 interaktywnych lekcji z przykładami do wstawienia.
 - **Szablony** — Hello World, I2C 24Cxx, SPI 25Cxx, Microwire 93Cxx.
+- **Motywy** — jasny / ciemny / wysoki kontrast / system oraz przełącznik **Polski/English**.
+- **Pliki** — otwieranie istniejącego `.hpl` i zapis/pobieranie pracy.
+- **Asystent AI** — Claude natywnie w webie (bez klucza); Claude + DeepSeek po kluczu API w wersji desktop.
+- **Bloki** — opcjonalny tryb graficzny (Scratch/FBD) generujący HPL.
 - **Generator `.cfg`** i eksport `.hpl`.
 
 ## Nauka HPL
@@ -42,6 +48,7 @@ Zacznij od `docs/Przewodnik_HPL_PL.md`. Rozdziały prowadzą od podstaw (piny, r
 - [x] **B** — Tryb graficzny „klocki" (Scratch/FBD) jako opcja
 - [x] **C** — Wersja EN przewodnika (docs/Guide_HPL_EN.md)
 - [x] **D** — Wersja lokalna (Electron) w `desktop/`: natywny zapis plików + AI DeepSeek/Claude po kluczu API (most do debuggera: TODO)
+- [x] Przełącznik języka **Polski/English** + otwieranie plików `.hpl` z dysku
 
 ## Licencja
 

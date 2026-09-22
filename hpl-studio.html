@@ -268,53 +268,61 @@
     <div><h1>HPL Studio</h1><div class="sub">Orange5 script editor</div></div>
   </div>
   <div class="ctl">
-    <label class="field">Szablon
+    <label class="field"><span data-t="lang">Język</span>
+      <select id="langSel">
+        <option value="pl">Polski</option>
+        <option value="en">English</option>
+      </select>
+    </label>
+    <label class="field"><span data-t="tmpl">Szablon</span>
       <select id="tmplSel">
-        <option value="">— wybierz —</option>
+        <option value="" data-t="tmpl_choose">— wybierz —</option>
         <option value="hello">Hello World</option>
         <option value="i2c">I2C EEPROM 24Cxx</option>
         <option value="spi">SPI EEPROM 25Cxx</option>
         <option value="mw">Microwire 93Cxx</option>
-        <option value="blank">Pusty szkielet</option>
+        <option value="blank" data-t="tmpl_blank">Pusty szkielet</option>
       </select>
     </label>
-    <label class="field">Motyw
+    <label class="field"><span data-t="theme">Motyw</span>
       <select id="themeSel">
-        <option value="">System</option>
-        <option value="light">☀ Jasny</option>
-        <option value="dark">🌙 Ciemny</option>
-        <option value="contrast">◑ Wysoki kontrast</option>
+        <option value="" data-t="t_sys">System</option>
+        <option value="light" data-t="t_light">☀ Jasny</option>
+        <option value="dark" data-t="t_dark">🌙 Ciemny</option>
+        <option value="contrast" data-t="t_contrast">◑ Wysoki kontrast</option>
       </select>
     </label>
-    <button class="btn" id="validateBtn">✓ Sprawdź</button>
-    <button class="btn" id="copyBtn">Kopiuj</button>
-    <button class="btn primary" id="dlBtn">Pobierz .hpl</button>
+    <button class="btn" id="validateBtn" data-t="b_validate">✓ Sprawdź</button>
+    <button class="btn" id="openBtn" data-t="b_open">Otwórz</button>
+    <button class="btn" id="copyBtn" data-t="b_copy">Kopiuj</button>
+    <button class="btn primary" id="dlBtn" data-t="b_download">Pobierz .hpl</button>
+    <input type="file" id="openInput" accept=".hpl,.txt,.cfg,.hp4,.hp5" hidden>
   </div>
 </header>
 
 <main>
   <section class="col side" aria-label="Narzędzia">
-    <div class="block"><h2>Sekcje</h2><div class="chips" id="sectionChips"></div></div>
+    <div class="block"><h2 data-t="h_sections">Sekcje</h2><div class="chips" id="sectionChips"></div></div>
     <div class="block">
-      <h2>Kreator pinu</h2>
+      <h2 data-t="h_pin">Kreator pinu</h2>
       <div class="mini">
-        <label class="field">Nazwa<input class="txt" id="pinName" placeholder="SCK"></label>
-        <label class="field">Pin nr<input class="txt" id="pinNum" type="number" min="0" max="15" value="0"></label>
-        <label class="field">Kierunek<select id="pinDir"><option value="PINO">Wyjście (PINO)</option><option value="PINI">Wejście (PINI)</option></select></label>
-        <label class="field full" style="flex-direction:row;align-items:center;gap:7px;margin-top:16px"><input type="checkbox" id="pinInv"> odwrócony (#)</label>
+        <label class="field"><span data-t="pin_name">Nazwa</span><input class="txt" id="pinName" placeholder="SCK"></label>
+        <label class="field"><span data-t="pin_num">Pin nr</span><input class="txt" id="pinNum" type="number" min="0" max="15" value="0"></label>
+        <label class="field"><span data-t="pin_dir">Kierunek</span><select id="pinDir"><option value="PINO" data-t="dir_out">Wyjście (PINO)</option><option value="PINI" data-t="dir_in">Wejście (PINI)</option></select></label>
+        <label class="field full" style="flex-direction:row;align-items:center;gap:7px;margin-top:16px"><input type="checkbox" id="pinInv"> <span data-t="pin_inv">odwrócony (#)</span></label>
       </div>
-      <button class="btn" id="pinAdd" style="width:100%">Wstaw definicję pinu</button>
+      <button class="btn" id="pinAdd" style="width:100%" data-t="pin_add">Wstaw definicję pinu</button>
     </div>
-    <div class="block"><h2>Rejestry &amp; komendy</h2><div class="chips" id="cmdChips"></div></div>
-    <div class="block"><h2>Okna dialogowe</h2><div class="chips" id="printChips"></div></div>
+    <div class="block"><h2 data-t="h_regcmd">Rejestry &amp; komendy</h2><div class="chips" id="cmdChips"></div></div>
+    <div class="block"><h2 data-t="h_dialogs">Okna dialogowe</h2><div class="chips" id="printChips"></div></div>
   </section>
 
   <section class="col center" aria-label="Edytor">
     <div class="editor-toolbar">
       <span class="name"><span class="dot" id="savedDot"></span><span id="fileName">nowy_skrypt.hpl</span></span>
-      <button class="btn sm" id="blocksBtn" title="Programowanie blokami (opcja)">🧩 Bloki</button>
-      <button class="btn sm" id="fmtBtn">Porządkuj</button>
-      <button class="btn sm" id="clearBtn">Wyczyść</button>
+      <button class="btn sm" id="blocksBtn" data-tt="tb_blocks_title" data-t="tb_blocks" title="Programowanie blokami (opcja)">🧩 Bloki</button>
+      <button class="btn sm" id="fmtBtn" data-t="tb_format">Porządkuj</button>
+      <button class="btn sm" id="clearBtn" data-t="tb_clear">Wyczyść</button>
     </div>
     <div class="editor-body">
       <div class="editor-wrap">
@@ -330,16 +338,16 @@
 
     <div class="dock" id="dock">
       <div class="dock-tabs">
-        <button class="tab active" data-pane="paneDbg">Debugger</button>
-        <button class="tab" data-pane="paneProb">Problemy <span class="badge" id="probBadge" hidden>0</span></button>
-        <button class="tab" data-pane="paneTut">Samouczek</button>
-        <button class="tab" data-pane="paneAI">✦ Asystent AI</button>
+        <button class="tab active" data-pane="paneDbg" data-t="tab_dbg">Debugger</button>
+        <button class="tab" data-pane="paneProb"><span data-t="tab_prob">Problemy</span> <span class="badge" id="probBadge" hidden>0</span></button>
+        <button class="tab" data-pane="paneTut" data-t="tab_tut">Samouczek</button>
+        <button class="tab" data-pane="paneAI" data-t="tab_ai">✦ Asystent AI</button>
         <div class="runbar">
-          <select id="runSection" class="txt" style="padding:4px 7px" title="Sekcja do uruchomienia"></select>
-          <button class="btn sm" id="runBtn" title="Uruchom">▶ Run</button>
-          <button class="btn sm" id="stepBtn" title="Krok">⤵ Krok</button>
-          <button class="btn sm" id="resetBtn" title="Reset">↺</button>
-          <button class="btn sm" id="dockToggle" title="Zwiń/rozwiń">▾</button>
+          <select id="runSection" class="txt" style="padding:4px 7px" data-tt="run_title" title="Sekcja do uruchomienia"></select>
+          <button class="btn sm" id="runBtn" data-tt="run_run_t" data-t="run_run" title="Uruchom">▶ Run</button>
+          <button class="btn sm" id="stepBtn" data-tt="run_step_t" data-t="run_step" title="Krok">⤵ Krok</button>
+          <button class="btn sm" id="resetBtn" data-tt="run_reset_t" title="Reset">↺</button>
+          <button class="btn sm" id="dockToggle" data-tt="run_toggle_t" title="Zwiń/rozwiń">▾</button>
         </div>
       </div>
       <div class="dock-body">
@@ -347,8 +355,8 @@
           <div class="dbg">
             <div class="console" id="console"></div>
             <div class="watch">
-              <h3>Rejestry</h3><div class="regs" id="regs"></div>
-              <h3>Piny / sygnały</h3><div class="pins" id="pinsView"></div>
+              <h3 data-t="w_regs">Rejestry</h3><div class="regs" id="regs"></div>
+              <h3 data-t="w_pins">Piny / sygnały</h3><div class="pins" id="pinsView"></div>
             </div>
           </div>
         </div>
@@ -357,20 +365,20 @@
         <div class="pane" id="paneAI">
           <div class="ai">
             <div class="ai-actions">
-              <select id="aiProvider" class="txt" style="padding:5px 8px" title="Wybór modelu AI">
-                <option value="claude">Claude (web, bez klucza)</option>
-                <option value="deepseek">DeepSeek (wersja lokalna)</option>
+              <select id="aiProvider" class="txt" style="padding:5px 8px" data-tt="ai_model_t" title="Wybór modelu AI">
+                <option value="claude" data-t="ai_claude">Claude (web, bez klucza)</option>
+                <option value="deepseek" data-t="ai_deepseek">DeepSeek (wersja lokalna)</option>
               </select>
-              <button class="btn sm" data-ai="explain">Wyjaśnij skrypt</button>
-              <button class="btn sm" data-ai="generate">Wygeneruj z opisu</button>
-              <button class="btn sm" data-ai="fix">Znajdź błąd</button>
-              <button class="btn sm" data-ai="comment">Skomentuj</button>
+              <button class="btn sm" data-ai="explain" data-t="ai_explain">Wyjaśnij skrypt</button>
+              <button class="btn sm" data-ai="generate" data-t="ai_generate">Wygeneruj z opisu</button>
+              <button class="btn sm" data-ai="fix" data-t="ai_fix">Znajdź błąd</button>
+              <button class="btn sm" data-ai="comment" data-t="ai_comment">Skomentuj</button>
             </div>
             <div class="ai-input">
-              <textarea id="aiPrompt" placeholder="Opisz, czego potrzebujesz — np. „odczyt EEPROM 93C46" — albo zadaj pytanie o HPL…"></textarea>
-              <button class="btn primary" id="aiSend">Zapytaj Claude</button>
+              <textarea id="aiPrompt" data-tph="ai_ph" placeholder="Opisz, czego potrzebujesz — np. „odczyt EEPROM 93C46" — albo zadaj pytanie o HPL…"></textarea>
+              <button class="btn primary" id="aiSend" data-t="ai_send">Zapytaj Claude</button>
             </div>
-            <div class="ai-out" id="aiOut"><div class="ai-hint">✦ Asystent Claude pomoże <b>wyjaśnić</b>, <b>wygenerować</b> lub <b>poprawić</b> skrypt HPL. Działa w opublikowanej wersji strony; pierwsze użycie poprosi o zgodę.</div></div>
+            <div class="ai-out" id="aiOut"><div class="ai-hint" data-th="ai_hint">✦ Asystent Claude pomoże <b>wyjaśnić</b>, <b>wygenerować</b> lub <b>poprawić</b> skrypt HPL. Działa w opublikowanej wersji strony; pierwsze użycie poprosi o zgodę.</div></div>
           </div>
         </div>
       </div>
@@ -387,35 +395,35 @@
 
   <section class="col ref" aria-label="Referencja">
     <div class="block">
-      <h2>Rejestracja w menu (.cfg)</h2>
+      <h2 data-t="h_cfg">Rejestracja w menu (.cfg)</h2>
       <div class="mini">
-        <label class="field full">Grupa<input class="txt" id="cfgGroup" value="MojeSkrypty"></label>
-        <label class="field">Nazwa chipu<input class="txt" id="cfgChip" value="My Chip"></label>
-        <label class="field">Rozmiar<input class="txt" id="cfgSize" value="256"></label>
-        <label class="field full">Plik<input class="txt" id="cfgFile" value="my_script.hpl"></label>
+        <label class="field full"><span data-t="cfg_group">Grupa</span><input class="txt" id="cfgGroup" value="MojeSkrypty"></label>
+        <label class="field"><span data-t="cfg_chip">Nazwa chipu</span><input class="txt" id="cfgChip" value="My Chip"></label>
+        <label class="field"><span data-t="cfg_size">Rozmiar</span><input class="txt" id="cfgSize" value="256"></label>
+        <label class="field full"><span data-t="cfg_file">Plik</span><input class="txt" id="cfgFile" value="my_script.hpl"></label>
       </div>
       <div class="out" id="cfgOut"></div>
-      <button class="btn" id="cfgCopy" style="width:100%">Kopiuj wpis .cfg</button>
+      <button class="btn" id="cfgCopy" style="width:100%" data-t="cfg_copy">Kopiuj wpis .cfg</button>
     </div>
-    <div class="block"><h2>Struktura skryptu</h2><div class="outline" id="outline"></div></div>
-    <div class="block"><h2>Ściąga HPL</h2><div id="refList"></div></div>
+    <div class="block"><h2 data-t="h_outline">Struktura skryptu</h2><div class="outline" id="outline"></div></div>
+    <div class="block"><h2 data-t="h_cheat">Ściąga HPL</h2><div id="refList"></div></div>
   </section>
 </main>
 
 <div class="modal" id="blkModal">
   <div class="modal-box">
     <div class="modal-head">
-      <h2>🧩 Programowanie blokami</h2>
-      <span class="mh-sub">Buduj skrypt z klocków — na żywo generuje HPL</span>
-      <button class="btn sm close" id="blkClose">✕ Zamknij</button>
+      <h2 data-t="blk_title">🧩 Programowanie blokami</h2>
+      <span class="mh-sub" data-t="blk_sub">Buduj skrypt z klocków — na żywo generuje HPL</span>
+      <button class="btn sm close" id="blkClose" data-t="blk_close">✕ Zamknij</button>
     </div>
     <div class="modal-body">
-      <div class="blk-work"><h3>Bloki (dodawaj przez „＋ dodaj blok…")</h3><div id="blkWork"></div></div>
-      <div class="blk-prev"><h3>Podgląd HPL</h3><div id="blkPrev"></div></div>
+      <div class="blk-work"><h3 data-t="blk_work">Bloki (dodawaj przez „＋ dodaj blok…")</h3><div id="blkWork"></div></div>
+      <div class="blk-prev"><h3 data-t="blk_prev">Podgląd HPL</h3><div id="blkPrev"></div></div>
     </div>
     <div class="modal-foot">
-      <button class="btn" id="blkClear2">Wyczyść bloki</button>
-      <button class="btn primary" id="blkInsert">Wstaw do edytora →</button>
+      <button class="btn" id="blkClear2" data-t="blk_clear">Wyczyść bloki</button>
+      <button class="btn primary" id="blkInsert" data-t="blk_insert">Wstaw do edytora →</button>
     </div>
   </div>
 </div>
@@ -426,6 +434,79 @@
 "use strict";
 const $ = s => document.querySelector(s);
 const code=$("#code"), hl=$("#highlight").firstElementChild, gutter=$("#gutter"), ac=$("#ac");
+
+/* ═══════════ i18n (PL / EN) ═══════════ */
+let LANG='pl';try{LANG=localStorage.getItem('hpl_lang')||'pl';}catch(_){}
+const DICT={
+  sub:['Orange5 script editor','Orange5 script editor'],
+  tmpl:['Szablon','Template'], tmpl_choose:['— wybierz —','— choose —'], tmpl_blank:['Pusty szkielet','Empty skeleton'],
+  theme:['Motyw','Theme'], t_sys:['System','System'], t_light:['☀ Jasny','☀ Light'], t_dark:['🌙 Ciemny','🌙 Dark'], t_contrast:['◑ Wysoki kontrast','◑ High contrast'],
+  lang:['Język','Language'],
+  b_validate:['✓ Sprawdź','✓ Check'], b_copy:['Kopiuj','Copy'], b_download:['Pobierz .hpl','Download .hpl'],
+  h_sections:['Sekcje','Sections'], h_pin:['Kreator pinu','Pin builder'],
+  pin_name:['Nazwa','Name'], pin_num:['Pin nr','Pin no.'], pin_dir:['Kierunek','Direction'], dir_out:['Wyjście (PINO)','Output (PINO)'], dir_in:['Wejście (PINI)','Input (PINI)'], pin_inv:['odwrócony (#)','inverted (#)'], pin_add:['Wstaw definicję pinu','Insert pin definition'],
+  h_regcmd:['Rejestry & komendy','Registers & commands'], h_dialogs:['Okna dialogowe','Dialog boxes'],
+  tb_blocks:['🧩 Bloki','🧩 Blocks'], tb_blocks_title:['Programowanie blokami (opcja)','Block programming (option)'], tb_format:['Porządkuj','Tidy'], tb_clear:['Wyczyść','Clear'],
+  tab_dbg:['Debugger','Debugger'], tab_prob:['Problemy','Problems'], tab_tut:['Samouczek','Tutorial'], tab_ai:['✦ Asystent AI','✦ AI assistant'],
+  run_title:['Sekcja do uruchomienia','Section to run'], run_run:['▶ Run','▶ Run'], run_run_t:['Uruchom','Run'], run_step:['⤵ Krok','⤵ Step'], run_step_t:['Krok','Step'], run_reset_t:['Reset','Reset'], run_toggle_t:['Zwiń/rozwiń','Collapse/expand'],
+  w_regs:['Rejestry','Registers'], w_pins:['Piny / sygnały','Pins / signals'],
+  ai_claude:['Claude (web, bez klucza)','Claude (web, no key)'], ai_deepseek:['DeepSeek (wersja lokalna)','DeepSeek (desktop build)'], ai_model_t:['Wybór modelu AI','AI model'],
+  ai_explain:['Wyjaśnij skrypt','Explain script'], ai_generate:['Wygeneruj z opisu','Generate from prompt'], ai_fix:['Znajdź błąd','Find a bug'], ai_comment:['Skomentuj','Add comments'],
+  ai_ph:['Opisz, czego potrzebujesz — np. „odczyt EEPROM 93C46" — albo zadaj pytanie o HPL…','Describe what you need — e.g. "read 93C46 EEPROM" — or ask about HPL…'],
+  ai_send:['Zapytaj Claude','Ask Claude'],
+  ai_hint:['✦ Asystent Claude pomoże <b>wyjaśnić</b>, <b>wygenerować</b> lub <b>poprawić</b> skrypt HPL. Działa w opublikowanej wersji strony; pierwsze użycie poprosi o zgodę.','✦ The Claude assistant helps you <b>explain</b>, <b>generate</b> or <b>fix</b> HPL scripts. Works in the published page; the first use asks for consent.'],
+  h_cfg:['Rejestracja w menu (.cfg)','Menu registration (.cfg)'], cfg_group:['Grupa','Group'], cfg_chip:['Nazwa chipu','Chip name'], cfg_size:['Rozmiar','Size'], cfg_file:['Plik','File'], cfg_copy:['Kopiuj wpis .cfg','Copy .cfg entry'],
+  h_outline:['Struktura skryptu','Script outline'], h_cheat:['Ściąga HPL','HPL cheat sheet'],
+  blk_title:['🧩 Programowanie blokami','🧩 Block programming'], blk_sub:['Buduj skrypt z klocków — na żywo generuje HPL','Build a script from blocks — generates HPL live'], blk_close:['✕ Zamknij','✕ Close'],
+  blk_work:['Bloki (dodawaj przez „＋ dodaj blok…")','Blocks (add via "＋ add block…")'], blk_prev:['Podgląd HPL','HPL preview'], blk_clear:['Wyczyść bloki','Clear blocks'], blk_insert:['Wstaw do edytora →','Insert into editor →'],
+  blk_add:['＋ dodaj blok…','＋ add block…'], blk_prev_empty:['; (dodaj bloki po lewej)','; (add blocks on the left)'], blk_none:['Brak bloków','No blocks'], blk_inserted:['Wstawiono bloki jako HPL ✓','Inserted blocks as HPL ✓'], blk_del_t:['Usuń blok','Delete block'], blk_opt_plain:['(zwykłe)','(plain)'],
+  st_lines:['linii','lines'], st_chars:['znaków','chars'], st_secs:['sekcji','sections'], st_ready:['gotowy','ready'], st_done:['wykonano','done'], st_step_at:['krok @ Ln','step @ Ln'],
+  outline_empty:['Brak sekcji [ ]','No [ ] sections'],
+  t_tidied:['Uporządkowano','Tidied'], t_reset:['Reset debuggera','Debugger reset'],
+  c_clear:['Wyczyścić edytor?','Clear the editor?'], c_replace:['Zastąpić bieżący kod szablonem?','Replace current code with the template?'],
+  copy_ok:['skopiowano ✓','copied ✓'], copy_manual:['Zaznacz i skopiuj ręcznie','Select and copy manually'], cfg_entry:['Wpis .cfg','.cfg entry'],
+  dl_saved:['Zapisano:','Saved:'], dl_saved_web:['Zapisano','Saved'], dl_unavail:['.hpl (pobieranie niedostępne — skopiowano)','.hpl (download unavailable — copied)'],
+  val_ok:['✓ Brak problemów — składnia wygląda poprawnie.','✓ No problems — the syntax looks correct.'],
+  val_xbrace:["nadmiarowe '}'","extra '}'"], val_xparen:["nadmiarowe ')'","extra ')'"], val_ubrace:["niezamknięty(ch) '{'","unclosed '{'"], val_uparen:["niezamknięty(ch) '('","unclosed '('"],
+  val_nosec:['brak sekcji [ ] — skrypt nie ma funkcji','no [ ] sections — the script has no functions'], val_nosock:['brak SOCKET= (typ gniazda)','no SOCKET= (socket type)'], val_quote:['niesparowany cudzysłów "','unpaired quote "'], val_lhs:['nietypowa lewa strona: ','unusual left side: '],
+  val_notes:['uwag(i)','issue(s)'], val_syntax_ok:['Składnia OK ✓','Syntax OK ✓'],
+  dbg_nosec:['Brak sekcji do uruchomienia','No section to run'], dbg_start:['▶ start','▶ start'], dbg_end:['■ koniec','■ end'], dbg_kroki:['kroków','steps'], dbg_getskip:['GET (w symulacji pominięte — podaj wartość ręcznie)','GET (skipped in simulation — enter the value manually)'], dbg_ask:['(Ask → RA=1 założono OK)','(Ask → RA=1 assumed OK)'], dbg_limit:['⛔ przekroczono limit kroków (pętla nieskończona?)','⛔ step limit exceeded (infinite loop?)'], dbg_err:['błąd:','error:'], dbg_skip:['· pominięto:','· skipped:'],
+  p_plain:['Zwykłe','Plain'], p_info:['Info','Info'], p_error:['Błąd','Error'], p_ask:['Pytanie','Ask'], p_status:['Status','Status'], p_log:['Log','Log'], p_getcode:['Wpisz kod','Enter code'],
+  ai_insert:['Wstaw do edytora','Insert into editor'], ai_c_replace:['Zastąpić kod w edytorze wygenerowanym skryptem?','Replace editor code with the generated script?'], ai_inserted:['Wstawiono kod z Asystenta','Inserted code from the assistant'],
+  ai_thinking:['✦ Claude myśli…','✦ Claude is thinking…'], ai_need_desc:['Wpisz opis skryptu w polu powyżej (np. „odczyt EEPROM 93C46").','Enter a script description above (e.g. "read 93C46 EEPROM").'], ai_need_q:['Wpisz pytanie w polu powyżej.','Enter a question above.'],
+  ai_ds_web:['🔌 <b>DeepSeek</b> działa tylko w <b>wersji lokalnej</b> HPL Studio (aplikacja desktop). Przeglądarkowy artefakt blokuje połączenia sieciowe do API DeepSeek. W wersji lokalnej podasz swój <b>klucz API</b> (platform.deepseek.com → API keys) — DeepSeek nie ma logowania przez przeglądarkę, wyłącznie klucz API. Na razie użyj <b>Claude</b> (działa tutaj bez klucza).','🔌 <b>DeepSeek</b> works only in the <b>desktop build</b> of HPL Studio. The browser artifact blocks network calls to the DeepSeek API. In the desktop build you enter your <b>API key</b> (platform.deepseek.com → API keys) — DeepSeek has no browser login, only an API key. For now use <b>Claude</b> (works here without a key).'],
+  ai_claude_pub:['Asystent Claude działa w <b>opublikowanej</b> wersji HPL Studio (na claude.ai) i wymaga zgody. Otwórz opublikowaną stronę i spróbuj ponownie.','The Claude assistant works in the <b>published</b> HPL Studio (on claude.ai) and needs consent. Open the published page and try again.'],
+  ai_x_explain:['Wyjaśnij ten skrypt HPL krok po kroku.','Explain this HPL script step by step.'],
+  ai_x_fix:['Znajdź i wyjaśnij błędy w tym skrypcie HPL, potem podaj poprawioną wersję w bloku ```hpl.','Find and explain bugs in this HPL script, then give a corrected version in a ```hpl block.'],
+  ai_x_comment:['Dodaj czytelne polskie komentarze do tego skryptu HPL. Zwróć CAŁY skrypt w jednym bloku ```hpl.','Add clear English comments to this HPL script. Return the WHOLE script in a single ```hpl block.'],
+  ai_x_gen:['Wygeneruj kompletny, poprawny skrypt HPL dla: ','Generate a complete, correct HPL script for: '],
+  ai_x_gen2:['. Podaj go w jednym bloku ```hpl, a pod nim krótkie wyjaśnienie.','. Provide it in a single ```hpl block, followed by a short explanation.'],
+  ai_lang_instr:['\n\nOdpowiadaj po polsku, zwięźle i konkretnie. ','\n\nAnswer in English, concise and to the point. '],
+  ai_curscript:['\n\nBieżący skrypt użytkownika:\n','\n\nCurrent user script:\n'],
+  ai_nokey:['Brak klucza API dla ','No API key for '], ai_setkey:['. Ustaw go w menu <b>Ustawienia → Klucze API</b>.','. Set it in <b>Settings → API keys</b>.'],
+  ai_notgranted:['Brak zgody na Asystenta AI — możesz ją przyznać przy kolejnej próbie.','AI assistant consent was not granted — you can grant it on the next try.'],
+  ai_rate:['Zbyt wiele zapytań naraz — spróbuj za chwilę.','Too many requests — try again shortly.'],
+  ai_failed:['Nie udało się uzyskać odpowiedzi','Could not get a response'],
+  tut_insert:['Wstaw przykład do edytora','Insert example into editor'],
+  ac_section:['sekcja','section'], ac_socket:['gniazdo','socket'], ac_volt:['napięcie mV','voltage mV'], ac_desc:['opis','description'], ac_pinout:['pin wyjściowy','output pin'], ac_pinin:['pin wejściowy','input pin'], ac_loop:['pętla','loop'], ac_box:['okno','box'], ac_getv:['wpisz wartość','enter value'], ac_const:['stała','constant'], ac_databyte:['bajt komórki','cell byte'], ac_adr:['adres','address'], ac_break:['przerwij pętlę','break loop'], ac_exit:['zakończ','exit'], ac_reg:['rejestr','register'], ac_ask:['wynik Ask','Ask result'], ac_speed:['szybkość','speed'],
+  b_open:['Otwórz','Open'], t_opened:['Otwarto:','Opened:'], open_fail:['Nie udało się otworzyć pliku','Could not open the file'], c_replace_open:['Zastąpić bieżący kod otwartym plikiem?','Replace current code with the opened file?']
+};
+function t(k){const e=DICT[k];return e?(LANG==='en'?e[1]:e[0]):k;}
+function applyStaticLang(){
+  document.querySelectorAll('[data-t]').forEach(el=>{el.textContent=t(el.getAttribute('data-t'));});
+  document.querySelectorAll('[data-th]').forEach(el=>{el.innerHTML=t(el.getAttribute('data-th'));});
+  document.querySelectorAll('[data-tph]').forEach(el=>{el.setAttribute('placeholder',t(el.getAttribute('data-tph')));});
+  document.querySelectorAll('[data-tt]').forEach(el=>{el.title=t(el.getAttribute('data-tt'));});
+}
+function applyLang(l){
+  LANG=l;try{localStorage.setItem('hpl_lang',l);}catch(_){}
+  document.documentElement.lang=l;
+  const ls=$("#langSel"); if(ls) ls.value=l;
+  applyStaticLang();
+  buildPrints(); buildRef(); buildTut();
+  if($("#blkModal")&&$("#blkModal").classList.contains("open"))blkRender();
+  if(typeof refresh==='function')refresh();
+}
 
 /* ═══════════ Highlighting ═══════════ */
 const KW=new Set(["SOCKET","CDELAY","BAUD","VCC","VPP","INFO","PINO","PINI","DATA","ADR","CONST","LOOP","BREAK","EXIT","PRINT","GET","GROUP","CHIP","P"]);
@@ -461,9 +542,9 @@ function refresh(){
   gutter.innerHTML=lines.map((_,i)=>`<div data-l="${i+1}">${i+1}</div>`).join("");
   syncScroll();
   const secs=lines.filter(l=>/^\s*\[[^\]]+\]/.test(l));
-  $("#stLines").textContent=lines.length+" linii";
-  $("#stChars").textContent=src.length+" znaków";
-  $("#stSecs").textContent=secs.length+" sekcji";
+  $("#stLines").textContent=lines.length+" "+t('st_lines');
+  $("#stChars").textContent=src.length+" "+t('st_chars');
+  $("#stSecs").textContent=secs.length+" "+t('st_secs');
   buildOutline(lines); populateRunSections(lines); saveDraft();
 }
 function syncScroll(){$("#highlight").scrollTop=code.scrollTop;$("#highlight").scrollLeft=code.scrollLeft;gutter.scrollTop=code.scrollTop;positionCurline();}
@@ -499,16 +580,16 @@ code.addEventListener("keydown",e=>{
 
 /* ═══════════ Autocomplete ═══════════ */
 const AC_ITEMS=[
-  ...["[INIT]","[READ]","[WRITE]","[READBLOCK]","[WRITEBLOCK]","[ERASE]","[END]","[!SETUP]"].map(k=>({k,d:"sekcja",ins:k})),
-  {k:"SOCKET=",d:"gniazdo",ins:"SOCKET=0"},{k:"CDELAY=",d:"szybkość",ins:"CDELAY=1"},
-  {k:"VCC=",d:"napięcie mV",ins:"VCC=5000"},{k:"INFO=",d:"opis",ins:'INFO="..."'},
-  {k:"PINO=",d:"pin wyjściowy",ins:"PINO=NAME,0"},{k:"PINI=",d:"pin wejściowy",ins:"PINI=NAME,0"},
-  {k:"LOOP=",d:"pętla",ins:"LOOP=(7,0){}"},{k:"PRINT=",d:"okno",ins:'PRINT=("...")'},
-  {k:"GET=",d:"wpisz wartość",ins:'GET=("...",R0)'},{k:"CONST=",d:"stała",ins:"CONST=0x00"},
-  {k:"DATA",d:"bajt komórki",ins:"DATA"},{k:"ADR",d:"adres",ins:"ADR"},
-  {k:"BREAK",d:"przerwij pętlę",ins:"BREAK"},{k:"EXIT",d:"zakończ",ins:"EXIT"},
-  ...Array.from({length:16},(_,i)=>({k:"R"+i.toString(16).toUpperCase(),d:"rejestr",ins:"R"+i.toString(16).toUpperCase()})),
-  {k:"RA",d:"wynik Ask",ins:"RA"},
+  ...["[INIT]","[READ]","[WRITE]","[READBLOCK]","[WRITEBLOCK]","[ERASE]","[END]","[!SETUP]"].map(k=>({k,d:"ac_section",ins:k})),
+  {k:"SOCKET=",d:"ac_socket",ins:"SOCKET=0"},{k:"CDELAY=",d:"ac_speed",ins:"CDELAY=1"},
+  {k:"VCC=",d:"ac_volt",ins:"VCC=5000"},{k:"INFO=",d:"ac_desc",ins:'INFO="..."'},
+  {k:"PINO=",d:"ac_pinout",ins:"PINO=NAME,0"},{k:"PINI=",d:"ac_pinin",ins:"PINI=NAME,0"},
+  {k:"LOOP=",d:"ac_loop",ins:"LOOP=(7,0){}"},{k:"PRINT=",d:"ac_box",ins:'PRINT=("...")'},
+  {k:"GET=",d:"ac_getv",ins:'GET=("...",R0)'},{k:"CONST=",d:"ac_const",ins:"CONST=0x00"},
+  {k:"DATA",d:"ac_databyte",ins:"DATA"},{k:"ADR",d:"ac_adr",ins:"ADR"},
+  {k:"BREAK",d:"ac_break",ins:"BREAK"},{k:"EXIT",d:"ac_exit",ins:"EXIT"},
+  ...Array.from({length:16},(_,i)=>({k:"R"+i.toString(16).toUpperCase(),d:"ac_reg",ins:"R"+i.toString(16).toUpperCase()})),
+  {k:"RA",d:"ac_ask",ins:"RA"},
 ];
 let acMatches=[],acSel=0,acTokenStart=0;
 function currentToken(){
@@ -525,7 +606,7 @@ function maybeAutocomplete(){
   acTokenStart=start;acSel=0;renderAC();
 }
 function renderAC(){
-  ac.innerHTML=acMatches.map((it,i)=>`<div class="item ${i===acSel?"sel":""}" data-i="${i}"><span class="k">${esc(it.k)}</span><span class="d">${esc(it.d)}</span></div>`).join("");
+  ac.innerHTML=acMatches.map((it,i)=>`<div class="item ${i===acSel?"sel":""}" data-i="${i}"><span class="k">${esc(it.k)}</span><span class="d">${esc(t(it.d))}</span></div>`).join("");
   const co=caretCoords();ac.style.left=Math.min(co.x,code.clientWidth-240)+"px";ac.style.top=(co.y+22)+"px";ac.style.display="block";
 }
 function moveAC(d){acSel=(acSel+d+acMatches.length)%acMatches.length;renderAC();}
@@ -557,11 +638,12 @@ function caretCoords(){
 /* ═══════════ Palettes ═══════════ */
 const sections=["[INIT]","[READ]","[WRITE]","[READBLOCK]","[WRITEBLOCK]","[ERASE]","[END]","[!SETUP]","[_SUB]"];
 const cmds=["SOCKET=0","CDELAY=1","VCC=5000",'INFO="..."',"R0=","R0[I]=","DATA=R0","ADR=+1","LOOP=(7,0){}","LOOP=(0,15){}","BREAK","EXIT","P=1000","R0=+1","R0=<<1","R0=>>1","R0=&0xFF","R0=|1","R0=^0xFF","R1?0{}","CONST=0x00"];
-const prints=[["Zwykłe",'PRINT=("Tekst")'],["Info",'PRINT=I("Informacja")'],["Błąd",'PRINT=E("Błąd")'],["Pytanie",'PRINT=A("OK / Anuluj?")\nRA?1{}\nRA?0{}'],["Status",'PRINT=S("R0=%lu",R0)'],["Log",'PRINT=L("Log %lu\\n",R0)'],["Wpisz kod",'GET=("Podaj kod:",R0)']];
+const prints=[["p_plain",'PRINT=("Tekst")'],["p_info",'PRINT=I("Informacja")'],["p_error",'PRINT=E("Błąd")'],["p_ask",'PRINT=A("OK / Anuluj?")\nRA?1{}\nRA?0{}'],["p_status",'PRINT=S("R0=%lu",R0)'],["p_log",'PRINT=L("Log %lu\\n",R0)'],["p_getcode",'GET=("Podaj kod:",R0)']];
 function mkChip(p,l,payload,block){const b=document.createElement("button");b.className="chip";b.textContent=l;b.type="button";b.addEventListener("click",()=>block?insertBlock(payload):insertAtCursor(payload));p.appendChild(b);}
 sections.forEach(s=>mkChip($("#sectionChips"),s,"\n"+s+"\n",true));
 cmds.forEach(c=>mkChip($("#cmdChips"),c,c));
-prints.forEach(([l,p])=>mkChip($("#printChips"),l,p,true));
+function buildPrints(){const c=$("#printChips");c.innerHTML="";prints.forEach(([k,p])=>mkChip(c,t(k),p,true));}
+buildPrints();
 $("#pinAdd").addEventListener("click",()=>{const name=($("#pinName").value||"PIN").trim().replace(/\s+/g,"_");const num=$("#pinNum").value||"0";const dir=$("#pinDir").value;const inv=$("#pinInv").checked&&dir==="PINO"?"#":"";insertBlock(`${dir}=${inv}${name},${num}`);});
 
 /* ═══════════ Templates ═══════════ */
@@ -574,7 +656,7 @@ blank:`; Nowy skrypt HPL\n; CHIP=My Chip,256,my_script.hpl\nINFO="Opis skryptu"\
 };
 function loadTemplate(key){
   if(!T[key])return;
-  if(code.value.trim()&&!confirm("Zastąpić bieżący kod szablonem?"))return;
+  if(code.value.trim()&&!confirm(t('c_replace')))return;
   code.value=T[key];code.setSelectionRange(0,0);refresh();updateCursor();
   const m=T[key].match(/CHIP=([^,]+),([^,]+),([^\s\n]+)/);
   if(m){$("#cfgChip").value=m[1].trim();$("#cfgSize").value=m[2].trim();$("#cfgFile").value=m[3].trim();updateCfg();}
@@ -589,7 +671,7 @@ function buildOutline(lines){
     const lineStart=lines.slice(0,idx).join("\n").length+(idx?1:0);
     b.addEventListener("click",()=>{code.focus();code.setSelectionRange(lineStart,lineStart);code.scrollTop=Math.max(0,(idx-2)*20);syncScroll();updateCursor();});
     box.appendChild(b);}});
-  if(!found){const e=document.createElement("div");e.className="empty";e.textContent="Brak sekcji [ ]";box.appendChild(e);}
+  if(!found){const e=document.createElement("div");e.className="empty";e.textContent=t('outline_empty');box.appendChild(e);}
 }
 function populateRunSections(lines){
   const sel=$("#runSection");const prev=sel.value;sel.innerHTML="";
@@ -609,25 +691,49 @@ function updateCfg(){
 /* ═══════════ Copy / download ═══════════ */
 let toastT;function toast(m){const t=$("#toast");t.textContent=m;t.classList.add("show");clearTimeout(toastT);toastT=setTimeout(()=>t.classList.remove("show"),1900);}
 async function copyText(txt,label){
-  try{await navigator.clipboard.writeText(txt);toast(label+" skopiowano ✓");return;}catch(_){}
+  try{await navigator.clipboard.writeText(txt);toast(label+" "+t('copy_ok'));return;}catch(_){}
   const ta=document.createElement("textarea");ta.value=txt;ta.style.cssText="position:fixed;opacity:0";document.body.appendChild(ta);ta.select();
-  try{document.execCommand("copy");toast(label+" skopiowano ✓");}catch(e){toast("Zaznacz i skopiuj ręcznie");}ta.remove();
+  try{document.execCommand("copy");toast(label+" "+t('copy_ok'));}catch(e){toast(t('copy_manual'));}ta.remove();
 }
 $("#copyBtn").addEventListener("click",()=>copyText(code.value,".hpl"));
-$("#cfgCopy").addEventListener("click",()=>copyText($("#cfgOut").textContent,"Wpis .cfg"));
+$("#cfgCopy").addEventListener("click",()=>copyText($("#cfgOut").textContent,t('cfg_entry')));
 let downloads=null;(async()=>{try{downloads=await claude.use("downloads");}catch(_){}})();
 $("#dlBtn").addEventListener("click",async()=>{
   const name=$("#cfgFile").value.trim()||"my_script.hpl";
-  if(window.hplNative&&window.hplNative.saveFile){try{const p=await window.hplNative.saveFile({defaultName:name,data:code.value});if(p)toast("Zapisano: "+p);return;}catch(_){}}
-  if(downloads){try{await downloads.save({filename:name,data:code.value});toast("Zapisano "+name+" ✓");return;}catch(_){}}
-  copyText(code.value,".hpl (pobieranie niedostępne — skopiowano)");
+  if(window.hplNative&&window.hplNative.saveFile){try{const p=await window.hplNative.saveFile({defaultName:name,data:code.value});if(p)toast(t('dl_saved')+" "+p);return;}catch(_){}}
+  if(downloads){try{await downloads.save({filename:name,data:code.value});toast(t('dl_saved_web')+" "+name+" ✓");return;}catch(_){}}
+  copyText(code.value,t('dl_unavail'));
+});
+
+/* ═══════════ Open file ═══════════ */
+async function loadIntoEditor(text,nameHint){
+  if(code.value.trim()&&!confirm(t('c_replace_open')))return;
+  code.value=text;code.setSelectionRange(0,0);refresh();updateCursor();
+  if(nameHint){const m=text.match(/CHIP=([^,]+),([^,]+),([^\s\n]+)/);if(m){$("#cfgChip").value=m[1].trim();$("#cfgSize").value=m[2].trim();$("#cfgFile").value=m[3].trim();}else{$("#cfgFile").value=nameHint;}updateCfg();}
+  toast(t('t_opened')+" "+(nameHint||""));
+}
+$("#openBtn").addEventListener("click",async()=>{
+  if(window.hplNative&&window.hplNative.openFile){
+    try{const r=await window.hplNative.openFile();if(r&&r.data!=null)loadIntoEditor(r.data,(r.path||"").split(/[\\/]/).pop());}
+    catch(_){toast(t('open_fail'));}
+    return;
+  }
+  $("#openInput").click();
+});
+$("#openInput").addEventListener("change",e=>{
+  const f=e.target.files&&e.target.files[0];if(!f)return;
+  const rd=new FileReader();
+  rd.onload=()=>loadIntoEditor(String(rd.result||""),f.name);
+  rd.onerror=()=>toast(t('open_fail'));
+  rd.readAsText(f);e.target.value="";
 });
 
 /* ═══════════ Misc buttons ═══════════ */
-$("#clearBtn").addEventListener("click",()=>{if(confirm("Wyczyścić edytor?")){code.value="";refresh();updateCursor();}});
-$("#fmtBtn").addEventListener("click",()=>{code.value=code.value.replace(/[ \t]+$/gm,"").replace(/\n{3,}/g,"\n\n").replace(/\s+$/,"")+"\n";refresh();toast("Uporządkowano");});
+$("#clearBtn").addEventListener("click",()=>{if(confirm(t('c_clear'))){code.value="";refresh();updateCursor();}});
+$("#fmtBtn").addEventListener("click",()=>{code.value=code.value.replace(/[ \t]+$/gm,"").replace(/\n{3,}/g,"\n\n").replace(/\s+$/,"")+"\n";refresh();toast(t('t_tidied'));});
 function applyTheme(v){if(v)document.documentElement.setAttribute("data-theme",v);else document.documentElement.removeAttribute("data-theme");try{localStorage.setItem("hpl_theme",v||"");}catch(_){}}
 $("#themeSel").addEventListener("change",e=>applyTheme(e.target.value));
+$("#langSel").addEventListener("change",e=>applyLang(e.target.value));
 
 /* dock tabs */
 document.querySelectorAll(".dock-tabs .tab").forEach(t=>t.addEventListener("click",()=>{
@@ -650,17 +756,17 @@ function validate(){
   const pins=new Set(),regsAlias=new Set();
   lines.forEach((raw,i)=>{
     const ln=i+1;let line=raw;const ci=firstCommentIdx(line);if(ci>=0)line=line.slice(0,ci);
-    for(const ch of line){if(ch==="{")braces++;else if(ch==="}"){braces--;if(braces<0){probs.push({s:"error",l:ln,m:"nadmiarowe '}'"});braces=0;}}if(ch==="(")parens++;else if(ch===")"){parens--;if(parens<0){probs.push({s:"error",l:ln,m:"nadmiarowe ')'"});parens=0;}}}
-    const t=line.trim();if(!t)return;
-    if(/^\[[^\]]+\]/.test(t))hasSection=true;
-    let pm;if(pm=t.match(/^PIN[OI]\s*=\s*#?([A-Za-z_]\w*)/))pins.add(pm[1].toUpperCase());
-    if((q=(line.match(/"/g)||[]).length)%2)probs.push({s:"warn",l:ln,m:"niesparowany cudzysłów \""});
-    if(/^[A-Za-z]/.test(t)&&t.includes("=")){const lhs=t.split("=")[0].trim();if(/[^\w#$\[\]]/.test(lhs)&&!/^(LOOP|PRINT|GET|INFO)/.test(lhs))probs.push({s:"warn",l:ln,m:"nietypowa lewa strona: "+lhs});}
+    for(const ch of line){if(ch==="{")braces++;else if(ch==="}"){braces--;if(braces<0){probs.push({s:"error",l:ln,m:t('val_xbrace')});braces=0;}}if(ch==="(")parens++;else if(ch===")"){parens--;if(parens<0){probs.push({s:"error",l:ln,m:t('val_xparen')});parens=0;}}}
+    const tt=line.trim();if(!tt)return;
+    if(/^\[[^\]]+\]/.test(tt))hasSection=true;
+    let pm;if(pm=tt.match(/^PIN[OI]\s*=\s*#?([A-Za-z_]\w*)/))pins.add(pm[1].toUpperCase());
+    if((q=(line.match(/"/g)||[]).length)%2)probs.push({s:"warn",l:ln,m:t('val_quote')});
+    if(/^[A-Za-z]/.test(tt)&&tt.includes("=")){const lhs=tt.split("=")[0].trim();if(/[^\w#$\[\]]/.test(lhs)&&!/^(LOOP|PRINT|GET|INFO)/.test(lhs))probs.push({s:"warn",l:ln,m:t('val_lhs')+lhs});}
   });
-  if(braces>0)probs.push({s:"error",l:lines.length,m:braces+" niezamknięty(ch) '{'"});
-  if(parens>0)probs.push({s:"error",l:lines.length,m:parens+" niezamknięty(ch) '('"});
-  if(!hasSection)probs.push({s:"warn",l:1,m:"brak sekcji [ ] — skrypt nie ma funkcji"});
-  if(!/SOCKET\s*=/.test(code.value))probs.push({s:"warn",l:1,m:"brak SOCKET= (typ gniazda)"});
+  if(braces>0)probs.push({s:"error",l:lines.length,m:braces+" "+t('val_ubrace')});
+  if(parens>0)probs.push({s:"error",l:lines.length,m:parens+" "+t('val_uparen')});
+  if(!hasSection)probs.push({s:"warn",l:1,m:t('val_nosec')});
+  if(!/SOCKET\s*=/.test(code.value))probs.push({s:"warn",l:1,m:t('val_nosock')});
   renderProblems(probs);
   return probs;
 }
@@ -668,12 +774,12 @@ function firstCommentIdx(line){let inStr=false;for(let i=0;i<line.length;i++){co
 function renderProblems(probs){
   const box=$("#problems");const badge=$("#probBadge");
   const errs=probs.filter(p=>p.s==="error").length;
-  if(!probs.length){box.innerHTML='<div class="prob-empty">✓ Brak problemów — składnia wygląda poprawnie.</div>';badge.hidden=true;return;}
+  if(!probs.length){box.innerHTML='<div class="prob-empty">'+t('val_ok')+'</div>';badge.hidden=true;return;}
   badge.hidden=false;badge.textContent=probs.length;badge.style.background=errs?"var(--err)":"var(--warn)";
   box.innerHTML=probs.map(p=>`<div class="prob ${p.s==='error'?'error':'warn'}" data-l="${p.l}"><span class="sevdot"></span><span class="loc">Ln ${p.l}</span><span class="msg">${esc(p.m)}</span></div>`).join("");
   box.querySelectorAll(".prob").forEach(el=>el.addEventListener("click",()=>{const l=+el.dataset.l;const off=code.value.split("\n").slice(0,l-1).join("\n").length+(l>1?1:0);code.focus();code.setSelectionRange(off,off);code.scrollTop=Math.max(0,(l-2)*20);syncScroll();updateCursor();}));
 }
-$("#validateBtn").addEventListener("click",()=>{const p=validate();switchPane("paneProb");toast(p.length?p.length+" uwag(i)":"Składnia OK ✓");});
+$("#validateBtn").addEventListener("click",()=>{const p=validate();switchPane("paneProb");toast(p.length?p.length+" "+t('val_notes'):t('val_syntax_ok'));});
 function switchPane(id){document.querySelectorAll(".dock-tabs .tab").forEach(x=>x.classList.toggle("active",x.dataset.pane===id));document.querySelectorAll(".pane").forEach(p=>p.classList.toggle("active",p.id===id));$("#dock").classList.remove("collapsed");}
 
 /* ═══════════════════════════ SIMULATOR / DEBUGGER ═══════════════════════════ */
@@ -754,22 +860,21 @@ function setPin(name,val,ctx){name=name.toUpperCase();if(name in ctx.pins){const
 function setBit(base,idx,val,ctx){const R=resolveReg(base);if(R in ctx.regs){let v=ctx.regs[R];if(val&1)v|=(1<<idx);else v&=~(1<<idx);ctx.regs[R]=v>>>0;ctx.changed.add(R);}else if(base.toUpperCase() in ctx.pins){setPin(base,val,ctx);}}
 
 function execSimple(text,ctx){
-  const t=text.trim();if(!t)return;
-  if(/^BREAK$/i.test(t)){ctx.brk=true;return;}
-  if(/^EXIT$/i.test(t)){ctx.halt=true;ctx.log("sys","— EXIT —");return;}
+  const tt=text.trim();if(!tt)return;
+  if(/^BREAK$/i.test(tt)){ctx.brk=true;return;}
+  if(/^EXIT$/i.test(tt)){ctx.halt=true;ctx.log("sys","— EXIT —");return;}
   // subroutine call: _NAME or _NAME(arg)
-  let m=t.match(/^(_[A-Za-z_]\w*)\s*(?:\((.*)\))?$/);
-  if(m&&ctx.prog.sections["_"+m[1].slice(1)]===undefined&&ctx.prog.sections[m[1].slice(1)===undefined?m[1]:m[1]]){}
+  let m=tt.match(/^(_[A-Za-z_]\w*)\s*(?:\((.*)\))?$/);
   // handled in run() via needsSub; here only primitives
   // PRINT
-  if(m=t.match(/^PRINT\s*=\s*([IEASL]?)\s*\((.*)\)$/i)){doPrint(m[1].toUpperCase(),m[2],ctx);return;}
-  if(m=t.match(/^GET\s*=\s*\((.*)\)$/i)){ctx.log("sys","GET (w symulacji pominięte — podaj wartość ręcznie)");ctx.regs.RA=1;return;}
-  if(m=t.match(/^P\s*=\s*(.+)$/i)&&!t.includes("PIN")){/*delay*/return;}
-  if(/^(CDELAY|SOCKET|VCC|BAUD|INFO|CONST|VPP)\b/i.test(t))return; // header-ish, ignore in run
+  if(m=tt.match(/^PRINT\s*=\s*([IEASL]?)\s*\((.*)\)$/i)){doPrint(m[1].toUpperCase(),m[2],ctx);return;}
+  if(m=tt.match(/^GET\s*=\s*\((.*)\)$/i)){ctx.log("sys",t('dbg_getskip'));ctx.regs.RA=1;return;}
+  if(m=tt.match(/^P\s*=\s*(.+)$/i)&&!tt.includes("PIN")){/*delay*/return;}
+  if(/^(CDELAY|SOCKET|VCC|BAUD|INFO|CONST|VPP)\b/i.test(tt))return; // header-ish, ignore in run
   // assignment
-  const eq=t.indexOf("=");
+  const eq=tt.indexOf("=");
   if(eq>0){
-    const lhs=t.slice(0,eq).trim();let rhs=t.slice(eq+1).trim();
+    const lhs=tt.slice(0,eq).trim();let rhs=tt.slice(eq+1).trim();
     const bm=lhs.match(/^([A-Za-z_$]\w*)\[(.+)\]$/);
     // pulse: X=P
     if(rhs==="P"){const cur=getVal(lhs,ctx);setReg(lhs,1,ctx);setReg(lhs,0,ctx);return;}
@@ -789,7 +894,7 @@ function execSimple(text,ctx){
     }
     setReg(lhs,res>>>0,ctx);return;
   }
-  ctx.log("sys","· pominięto: "+t);
+  ctx.log("sys",t('dbg_skip')+" "+tt);
 }
 function evalCond(cond,ctx){
   const q=cond.indexOf("?");const lhs=cond.slice(0,q).trim();let r=cond.slice(q+1).trim();
@@ -812,14 +917,14 @@ function doPrint(kind,args,ctx){
   }else out=args;
   const tag=kind==="I"?"ℹ":kind==="E"?"✕":kind==="A"?"?":kind==="S"?"≡":kind==="L"?"»":"▸";
   ctx.log(kind==="E"?"errln":"print",tag+" "+out);
-  if(kind==="A"){ctx.regs.RA=1;ctx.log("sys","  (Ask → RA=1 założono OK)");}
+  if(kind==="A"){ctx.regs.RA=1;ctx.log("sys","  "+t('dbg_ask'));}
 }
 
 /* generator run */
 function* runNodes(nodes,ctx){
   for(const nd of nodes){
     if(ctx.halt||ctx.brk)return;
-    if(++ctx.steps>300000){ctx.halt=true;ctx.log("errln","⛔ przekroczono limit kroków (pętla nieskończona?)");return;}
+    if(++ctx.steps>300000){ctx.halt=true;ctx.log("errln",t('dbg_limit'));return;}
     yield nd.line;
     if(nd.type==="loop"){
       const a=getVal(nd.a,ctx),b=getVal(nd.b,ctx);const step=a<=b?1:-1;
@@ -841,7 +946,7 @@ function* runNodes(nodes,ctx){
         ctx.log("sys","→ "+subName);
         yield* runNodes(subNodes,ctx);
       }else{
-        try{execSimple(nd.text,ctx);}catch(e){ctx.log("errln","błąd: "+nd.text+" ("+e.message+")");}
+        try{execSimple(nd.text,ctx);}catch(e){ctx.log("errln",t('dbg_err')+" "+nd.text+" ("+e.message+")");}
       }
     }
   }
@@ -858,12 +963,12 @@ function renderWatch(ctx){
 }
 function startDebug(){
   const prog=parseProgram();const secName=$("#runSection").value;
-  if(!secName||!prog.sections[secName]){toast("Brak sekcji do uruchomienia");return null;}
+  if(!secName||!prog.sections[secName]){toast(t('dbg_nosec'));return null;}
   $("#console").innerHTML="";
   const ctx=newCtx(prog);
   const st={i:0,line:prog.sections[secName].line};
   const nodes=parseNodes(prog.sections[secName].body,st);
-  ctx.log("okln","▶ start ["+secName+"]");
+  ctx.log("okln",t('dbg_start')+" ["+secName+"]");
   DBG={ctx,gen:null};DBG.gen=runNodes(nodes,ctx);
   renderWatch(ctx);switchPane("paneDbg");
   return DBG;
@@ -871,47 +976,51 @@ function startDebug(){
 $("#runBtn").addEventListener("click",()=>{
   if(!startDebug())return;const{ctx,gen}=DBG;let r,guard=0;
   do{ctx.changed.clear();r=gen.next();guard++;}while(!r.done&&!ctx.halt&&guard<400000);
-  setCurLine(-1);renderWatch(ctx);ctx.log("okln","■ koniec ("+ctx.steps+" kroków)");$("#stState").textContent="wykonano";
+  setCurLine(-1);renderWatch(ctx);ctx.log("okln",t('dbg_end')+" ("+ctx.steps+" "+t('dbg_kroki')+")");$("#stState").textContent=t('st_done');
 });
 $("#stepBtn").addEventListener("click",()=>{
   if(!DBG||!DBG.gen){if(!startDebug())return;}
   const{ctx,gen}=DBG;ctx.changed.clear();
   const r=gen.next();
-  if(r.done||ctx.halt){setCurLine(-1);ctx.log("okln","■ koniec");$("#stState").textContent="wykonano";DBG.gen=null;}
-  else{setCurLine(r.value);$("#stState").textContent="krok @ Ln "+r.value;}
+  if(r.done||ctx.halt){setCurLine(-1);ctx.log("okln",t('dbg_end'));$("#stState").textContent=t('st_done');DBG.gen=null;}
+  else{setCurLine(r.value);$("#stState").textContent=t('st_step_at')+" "+r.value;}
   renderWatch(ctx);
 });
-$("#resetBtn").addEventListener("click",()=>{DBG=null;setCurLine(-1);$("#console").innerHTML="";$("#regs").innerHTML="";$("#pinsView").innerHTML="";$("#stState").textContent="gotowy";toast("Reset debuggera");});
+$("#resetBtn").addEventListener("click",()=>{DBG=null;setCurLine(-1);$("#console").innerHTML="";$("#regs").innerHTML="";$("#pinsView").innerHTML="";$("#stState").textContent=t('st_ready');toast(t('t_reset'));});
 
 /* ═══════════════════════════ Reference cheat-sheet ═══════════════════════════ */
 const REF=[
- ["Struktura",[["[NAME]","sekcja / funkcja (klikalna w GUI)"],["INFO=\"...\"","opis chipu"],["SOCKET=n","gniazdo (0 zwykłe, 4 SPI)"],["CDELAY=n","opóźnienie zegara"],["VCC=mV","napięcie w mV"]]],
- ["Piny",[["PINO=NAME,n","wyjście na nóżce n"],["PINO=#NAME,n","wyjście odwrócone"],["PINI=NAME,n","wejście"],["NAME=1 / =0","ustaw pin"],["NAME=P","impuls (0→1→0)"]]],
- ["Rejestry",[["R0..RF","rejestry 32-bit"],["R0[i]","bit i"],["DATA / ADR","bajt / adres komórki"],["RA","wynik PRINT=A (1/0)"],["I","licznik LOOP"]]],
- ["Sterowanie",[["LOOP=(a,b){ }","pętla; I biegnie a..b"],["R?v{ }","jeśli R==v"],["R?!v{ }","jeśli R≠v"],["R?<v / R?>v","porównanie"],["BREAK / EXIT","przerwij / zakończ"],["P=n","pauza"]]],
- ["Matematyka",[["R0=+1 / -1","dodaj / odejmij"],["R0=&v |v ^v","AND / OR / XOR"],["R0=<<n / >>n","przesunięcia"],["R0=*Rx /Rx %Rx","× / ÷ / mod"],["0x1F, 1010B, 1FH","hex / bin / hex-suffix"]]],
- ["Dialogi",[["PRINT=(\"..\")","zwykłe okno"],["PRINT=I/E/A(..)","info / błąd / pytanie"],["PRINT=S/L(..)","status / log"],["GET=(\"..\",Rx)","okno wpisania"],["%lu %08lX \\n","format jak printf"]]]
+ {t:["Struktura","Structure"],rows:[["[NAME]","sekcja / funkcja (klikalna w GUI)","section / function (clickable in GUI)"],["INFO=\"...\"","opis chipu","chip description"],["SOCKET=n","gniazdo (0 zwykłe, 4 SPI)","socket (0 plain, 4 SPI)"],["CDELAY=n","opóźnienie zegara","clock delay"],["VCC=mV","napięcie w mV","voltage in mV"]]},
+ {t:["Piny","Pins"],rows:[["PINO=NAME,n","wyjście na nóżce n","output on pin n"],["PINO=#NAME,n","wyjście odwrócone","inverted output"],["PINI=NAME,n","wejście","input"],["NAME=1 / =0","ustaw pin","set pin"],["NAME=P","impuls (0→1→0)","pulse (0→1→0)"]]},
+ {t:["Rejestry","Registers"],rows:[["R0..RF","rejestry 32-bit","32-bit registers"],["R0[i]","bit i","bit i"],["DATA / ADR","bajt / adres komórki","cell byte / address"],["RA","wynik PRINT=A (1/0)","PRINT=A result (1/0)"],["I","licznik LOOP","LOOP counter"]]},
+ {t:["Sterowanie","Control flow"],rows:[["LOOP=(a,b){ }","pętla; I biegnie a..b","loop; I runs a..b"],["R?v{ }","jeśli R==v","if R==v"],["R?!v{ }","jeśli R≠v","if R≠v"],["R?<v / R?>v","porównanie","comparison"],["BREAK / EXIT","przerwij / zakończ","break / exit"],["P=n","pauza","pause"]]},
+ {t:["Matematyka","Math"],rows:[["R0=+1 / -1","dodaj / odejmij","add / subtract"],["R0=&v |v ^v","AND / OR / XOR","AND / OR / XOR"],["R0=<<n / >>n","przesunięcia","shifts"],["R0=*Rx /Rx %Rx","× / ÷ / mod","× / ÷ / mod"],["0x1F, 1010B, 1FH","hex / bin / hex-suffix","hex / bin / hex-suffix"]]},
+ {t:["Dialogi","Dialogs"],rows:[["PRINT=(\"..\")","zwykłe okno","plain box"],["PRINT=I/E/A(..)","info / błąd / pytanie","info / error / ask"],["PRINT=S/L(..)","status / log","status / log"],["GET=(\"..\",Rx)","okno wpisania","input box"],["%lu %08lX \\n","format jak printf","printf-style format"]]}
 ];
-const rl=$("#refList");
-REF.forEach(([title,rows],idx)=>{const d=document.createElement("details");if(idx===0)d.open=true;const s=document.createElement("summary");s.textContent=title;d.appendChild(s);rows.forEach(([k,v])=>{const r=document.createElement("div");r.className="refrow";r.innerHTML=`<code>${esc(k)}</code> <span class="m">— ${esc(v)}</span>`;d.appendChild(r);});rl.appendChild(d);});
+function buildRef(){const rl=$("#refList");rl.innerHTML="";const li=LANG==='en'?1:0;
+  REF.forEach((sec,idx)=>{const d=document.createElement("details");if(idx===0)d.open=true;const s=document.createElement("summary");s.textContent=sec.t[li];d.appendChild(s);sec.rows.forEach(([k,pl,en])=>{const r=document.createElement("div");r.className="refrow";r.innerHTML=`<code>${esc(k)}</code> <span class="m">— ${esc(li?en:pl)}</span>`;d.appendChild(r);});rl.appendChild(d);});}
+buildRef();
 
 /* ═══════════════════════════ Tutorial ═══════════════════════════ */
 const TUT=[
- {t:"1 · Czym jest HPL",h:"Język skryptów Orange5",p:["HPL steruje programatorem bit po bicie: definiujesz piny, potem w sekcjach [READ]/[WRITE] wystawiasz sygnały i czytasz je z powrotem.","Skrypt to zwykły plik tekstowy .hpl — zapisujesz go do folderu HPL\\ i rejestrujesz w pliku .cfg."],code:"; komentarz zaczyna się od ;\nINFO=\"opis\"\nSOCKET=0"},
- {t:"2 · Piny",h:"Definiowanie nóżek",p:["PINO to wyjście (sterujesz nim), PINI to wejście (czytasz). Numer to nóżka gniazda ZIF.","Ustawiasz pin: NAME=1 / NAME=0. Impuls zegara: NAME=P (robi 0→1→0)."],code:"PINO=SCK,0\nPINO=SI,1\nPINI=SO,1\n\n[INIT]\nSCK=0\nSI=1"},
- {t:"3 · Rejestry",h:"R0–RF, ADR, DATA",p:["Masz 16 rejestrów 32-bit: R0..RF. DATA to bajt bieżącej komórki, ADR to jej adres.","Pojedynczy bit: R0[3]. Matematyka: R0=+1, R0=&0xFF, R0=<<1."],code:"R0=0x1234\nR0=&0xFF     ; = 0x34\nR0=<<1       ; = 0x68\nDATA=R0"},
- {t:"4 · Pętle",h:"LOOP i licznik I",p:["LOOP=(a,b){...} wykonuje blok, a zmienna I biegnie od a do b (włącznie, w dół lub w górę).","Typowe: wysłanie 8 bitów od najstarszego."],code:"[_SEND]\nLOOP=(7,0){SI=R0[I],SCK=P}"},
- {t:"5 · Warunki",h:"Instrukcja ?",p:["R?v{...} wykona blok, gdy R==v. Odmiany: R?!v (różne), R?<v, R?>v.","Świetne do sprawdzania bitu gotowości (WIP) czy odpowiedzi chipu."],code:"R9[0]?0{BREAK}   ; wyjdź gdy bit0=0\nR1?!0{PRINT=(\"błąd\")}"},
- {t:"6 · Okna",h:"PRINT i GET",p:["PRINT=(\"..\") pokazuje okno; I/E/A to info/błąd/pytanie. Format jak printf: %lu, %08lX, \\n.","PRINT=A pyta OK/Anuluj → wynik w RA (1/0)."],code:"PRINT=(\"R0=%08lXH\",R0)\nPRINT=A(\"Kontynuować?\")\nRA?0{EXIT}"},
- {t:"7 · Uruchom w symulatorze",h:"Debugger",p:["Wybierz sekcję w pasku Debuggera i kliknij ▶ Run albo ⤵ Krok, by wykonać logikę krok po kroku.","Podglądaj rejestry i piny po prawej. Symulator liczy logikę (nie timing sprzętu)."],code:"; wybierz [READ] i kliknij Krok\n; obserwuj R0 i piny"},
- {t:"8 · Rozpowszechnianie",h:"Plik .hpl + wpis .cfg",p:["Skopiuj/pobierz .hpl do folderu HPL\\. Wygeneruj wpis .cfg (panel po prawej) i dodaj go do dowolnego pliku *.cfg — Orange5 skanuje wszystkie.","Znajomym wystarczy podać .hpl i linię CHIP=. Szyfrowanie (.hpx) nie jest potrzebne."],code:"GROUP=MojeSkrypty\nCHIP=My Chip,256,my_script.hpl"}
+ {t:["Czym jest HPL","What is HPL"],h:["Język skryptów Orange5","Orange5 scripting language"],p:[["HPL steruje programatorem bit po bicie: definiujesz piny, potem w sekcjach [READ]/[WRITE] wystawiasz sygnały i czytasz je z powrotem.","HPL drives the programmer bit by bit: you define pins, then in [READ]/[WRITE] sections you drive signals and read them back."],["Skrypt to zwykły plik tekstowy .hpl — zapisujesz go do folderu HPL\\ i rejestrujesz w pliku .cfg.","A script is a plain .hpl text file — save it to the HPL\\ folder and register it in a .cfg file."]],code:["; komentarz zaczyna się od ;\nINFO=\"opis\"\nSOCKET=0","; a comment starts with ;\nINFO=\"description\"\nSOCKET=0"]},
+ {t:["Piny","Pins"],h:["Definiowanie nóżek","Defining pins"],p:[["PINO to wyjście (sterujesz nim), PINI to wejście (czytasz). Numer to nóżka gniazda ZIF.","PINO is an output (you drive it), PINI is an input (you read it). The number is the ZIF socket pin."],["Ustawiasz pin: NAME=1 / NAME=0. Impuls zegara: NAME=P (robi 0→1→0).","Set a pin: NAME=1 / NAME=0. Clock pulse: NAME=P (does 0→1→0)."]],code:["PINO=SCK,0\nPINO=SI,1\nPINI=SO,1\n\n[INIT]\nSCK=0\nSI=1","PINO=SCK,0\nPINO=SI,1\nPINI=SO,1\n\n[INIT]\nSCK=0\nSI=1"]},
+ {t:["Rejestry","Registers"],h:["R0–RF, ADR, DATA","R0–RF, ADR, DATA"],p:[["Masz 16 rejestrów 32-bit: R0..RF. DATA to bajt bieżącej komórki, ADR to jej adres.","You have 16 32-bit registers: R0..RF. DATA is the current cell's byte, ADR its address."],["Pojedynczy bit: R0[3]. Matematyka: R0=+1, R0=&0xFF, R0=<<1.","Single bit: R0[3]. Math: R0=+1, R0=&0xFF, R0=<<1."]],code:["R0=0x1234\nR0=&0xFF     ; = 0x34\nR0=<<1       ; = 0x68\nDATA=R0","R0=0x1234\nR0=&0xFF     ; = 0x34\nR0=<<1       ; = 0x68\nDATA=R0"]},
+ {t:["Pętle","Loops"],h:["LOOP i licznik I","LOOP and counter I"],p:[["LOOP=(a,b){...} wykonuje blok, a zmienna I biegnie od a do b (włącznie, w dół lub w górę).","LOOP=(a,b){...} runs a block while I goes from a to b (inclusive, up or down)."],["Typowe: wysłanie 8 bitów od najstarszego.","Typical: sending 8 bits, MSB first."]],code:["[_SEND]\nLOOP=(7,0){SI=R0[I],SCK=P}","[_SEND]\nLOOP=(7,0){SI=R0[I],SCK=P}"]},
+ {t:["Warunki","Conditions"],h:["Instrukcja ?","The ? operator"],p:[["R?v{...} wykona blok, gdy R==v. Odmiany: R?!v (różne), R?<v, R?>v.","R?v{...} runs the block when R==v. Variants: R?!v (not equal), R?<v, R?>v."],["Świetne do sprawdzania bitu gotowości (WIP) czy odpowiedzi chipu.","Great for checking a ready bit (WIP) or the chip's response."]],code:["R9[0]?0{BREAK}   ; wyjdź gdy bit0=0\nR1?!0{PRINT=(\"błąd\")}","R9[0]?0{BREAK}   ; break when bit0=0\nR1?!0{PRINT=(\"error\")}"]},
+ {t:["Okna","Dialogs"],h:["PRINT i GET","PRINT and GET"],p:[["PRINT=(\"..\") pokazuje okno; I/E/A to info/błąd/pytanie. Format jak printf: %lu, %08lX, \\n.","PRINT=(\"..\") shows a box; I/E/A are info/error/ask. printf-style format: %lu, %08lX, \\n."],["PRINT=A pyta OK/Anuluj → wynik w RA (1/0).","PRINT=A asks OK/Cancel → result in RA (1/0)."]],code:["PRINT=(\"R0=%08lXH\",R0)\nPRINT=A(\"Kontynuować?\")\nRA?0{EXIT}","PRINT=(\"R0=%08lXH\",R0)\nPRINT=A(\"Continue?\")\nRA?0{EXIT}"]},
+ {t:["Symulator","Simulator"],h:["Debugger","Debugger"],p:[["Wybierz sekcję w pasku Debuggera i kliknij ▶ Run albo ⤵ Krok, by wykonać logikę krok po kroku.","Pick a section in the Debugger bar and click ▶ Run or ⤵ Step to execute the logic step by step."],["Podglądaj rejestry i piny po prawej. Symulator liczy logikę (nie timing sprzętu).","Watch registers and pins on the right. The simulator computes logic (not hardware timing)."]],code:["; wybierz [READ] i kliknij Krok\n; obserwuj R0 i piny","; pick [READ] and click Step\n; watch R0 and pins"]},
+ {t:["Rozpowszechnianie","Distribution"],h:["Plik .hpl + wpis .cfg",".hpl file + .cfg entry"],p:[["Skopiuj/pobierz .hpl do folderu HPL\\. Wygeneruj wpis .cfg (panel po prawej) i dodaj go do dowolnego pliku *.cfg — Orange5 skanuje wszystkie.","Copy/download the .hpl into the HPL\\ folder. Generate the .cfg entry (right panel) and add it to any *.cfg file — Orange5 scans them all."],["Znajomym wystarczy podać .hpl i linię CHIP=. Szyfrowanie (.hpx) nie jest potrzebne.","To share, just give the .hpl and the CHIP= line. Encryption (.hpx) is not needed."]],code:["GROUP=MojeSkrypty\nCHIP=My Chip,256,my_script.hpl","GROUP=MyScripts\nCHIP=My Chip,256,my_script.hpl"]}
 ];
-const tl=$("#tutList"),tc=$("#tutContent");
-TUT.forEach((les,i)=>{const b=document.createElement("button");b.innerHTML=`<span class="n">${i+1}</span>${esc(les.t.replace(/^\d+ · /,""))}`;b.addEventListener("click",()=>showTut(i));tl.appendChild(b);});
-function showTut(i){const l=TUT[i];tl.querySelectorAll("button").forEach((b,j)=>b.classList.toggle("active",j===i));
-  tc.innerHTML=`<h3>${esc(l.h)}</h3>`+l.p.map(x=>`<p>${esc(x)}</p>`).join("")+`<pre>${esc(l.code)}</pre>`;
-  const btn=document.createElement("button");btn.className="btn sm";btn.textContent="Wstaw przykład do edytora";btn.addEventListener("click",()=>insertBlock(l.code));tc.appendChild(btn);}
-showTut(0);
+let tutCur=0;
+function buildTut(){const tl=$("#tutList");tl.innerHTML="";const li=LANG==='en'?1:0;
+  TUT.forEach((les,i)=>{const b=document.createElement("button");b.innerHTML=`<span class="n">${i+1}</span>${esc(les.t[li])}`;b.addEventListener("click",()=>showTut(i));tl.appendChild(b);});
+  showTut(tutCur);}
+function showTut(i){tutCur=i;const l=TUT[i];const li=LANG==='en'?1:0;const tl=$("#tutList"),tc=$("#tutContent");
+  tl.querySelectorAll("button").forEach((b,j)=>b.classList.toggle("active",j===i));
+  tc.innerHTML=`<h3>${esc(l.h[li])}</h3>`+l.p.map(x=>`<p>${esc(x[li])}</p>`).join("")+`<pre>${esc(l.code[li])}</pre>`;
+  const btn=document.createElement("button");btn.className="btn sm";btn.textContent=t('tut_insert');btn.addEventListener("click",()=>insertBlock(l.code[li]));tc.appendChild(btn);}
+buildTut();
 
 /* ═══════════════════════════ Asystent AI (Claude via sample) ═══════════════════════════ */
 let sampleCap=null,aiBusy=false,aiCode={};
@@ -923,35 +1032,35 @@ function renderAIFinal(text){
   aiCode={};let html="",last=0,idx=0;const re=/```(?:\w+)?\r?\n([\s\S]*?)```/g;let m;
   while(m=re.exec(text)){html+=`<div>${esc(text.slice(last,m.index)).replace(/\n/g,"<br>")}</div>`;
     const codeTxt=m[1].replace(/\r?\n$/,"");const id="aic"+(idx++);aiCode[id]=codeTxt;
-    html+=`<pre>${esc(codeTxt)}</pre><button class="btn sm ai-code-insert" data-code="${id}">Wstaw do edytora</button>`;last=re.lastIndex;}
+    html+=`<pre>${esc(codeTxt)}</pre><button class="btn sm ai-code-insert" data-code="${id}">${esc(t('ai_insert'))}</button>`;last=re.lastIndex;}
   html+=`<div>${esc(text.slice(last)).replace(/\n/g,"<br>")}</div>`;
   aiOut(html);
-  $("#aiOut").querySelectorAll(".ai-code-insert").forEach(b=>b.addEventListener("click",()=>{const c=aiCode[b.dataset.code];if(c&&(!code.value.trim()||confirm("Zastąpić kod w edytorze wygenerowanym skryptem?"))){code.value=c;refresh();updateCursor();toast("Wstawiono kod z Asystenta");}}));
+  $("#aiOut").querySelectorAll(".ai-code-insert").forEach(b=>b.addEventListener("click",()=>{const c=aiCode[b.dataset.code];if(c&&(!code.value.trim()||confirm(t('ai_c_replace')))){code.value=c;refresh();updateCursor();toast(t('ai_inserted'));}}));
 }
 async function askAI(mode){
   if(aiBusy)return;
   const useNative=!!(window.hplNative&&window.hplNative.ai);
   const provider=$("#aiProvider").value;
-  if(provider==="deepseek"&&!useNative){aiOut('<div class="ai-msg">🔌 <b>DeepSeek</b> działa tylko w <b>wersji lokalnej</b> HPL Studio (aplikacja desktop). Przeglądarkowy artefakt blokuje połączenia sieciowe do API DeepSeek. W wersji lokalnej podasz swój <b>klucz API</b> (platform.deepseek.com → API keys) — DeepSeek nie ma logowania przez przeglądarkę, wyłącznie klucz API. Na razie użyj <b>Claude</b> (działa tutaj bez klucza).</div>');return;}
-  if(!useNative&&!sampleCap){aiOut('<div class="ai-msg">Asystent Claude działa w <b>opublikowanej</b> wersji HPL Studio (na claude.ai) i wymaga zgody. Otwórz opublikowaną stronę i spróbuj ponownie.</div>');return;}
+  if(provider==="deepseek"&&!useNative){aiOut('<div class="ai-msg">'+t('ai_ds_web')+'</div>');return;}
+  if(!useNative&&!sampleCap){aiOut('<div class="ai-msg">'+t('ai_claude_pub')+'</div>');return;}
   const desc=$("#aiPrompt").value.trim();let task,includeCode=true;
-  if(mode==="explain")task="Wyjaśnij ten skrypt HPL krok po kroku.";
-  else if(mode==="fix")task="Znajdź i wyjaśnij błędy w tym skrypcie HPL, potem podaj poprawioną wersję w bloku ```hpl.";
-  else if(mode==="comment")task="Dodaj czytelne polskie komentarze do tego skryptu HPL. Zwróć CAŁY skrypt w jednym bloku ```hpl.";
-  else if(mode==="generate"){includeCode=false;if(!desc){aiOut('<div class="ai-msg">Wpisz opis skryptu w polu powyżej (np. „odczyt EEPROM 93C46").</div>');return;}task="Wygeneruj kompletny, poprawny skrypt HPL dla: "+desc+". Podaj go w jednym bloku ```hpl, a pod nim krótkie wyjaśnienie.";}
-  else{if(!desc){aiOut('<div class="ai-msg">Wpisz pytanie w polu powyżej.</div>');return;}task=desc;}
-  const codePart=includeCode?("\n\nBieżący skrypt użytkownika:\n```hpl\n"+code.value+"\n```"):"";
-  const prompt=HPL_PRIMER+"\n\nOdpowiadaj po polsku, zwięźle i konkretnie. "+task+codePart;
-  aiBusy=true;$("#aiSend").disabled=true;aiOut('<div class="ai-msg">✦ Claude myśli…</div>');
+  if(mode==="explain")task=t('ai_x_explain');
+  else if(mode==="fix")task=t('ai_x_fix');
+  else if(mode==="comment")task=t('ai_x_comment');
+  else if(mode==="generate"){includeCode=false;if(!desc){aiOut('<div class="ai-msg">'+t('ai_need_desc')+'</div>');return;}task=t('ai_x_gen')+desc+t('ai_x_gen2');}
+  else{if(!desc){aiOut('<div class="ai-msg">'+t('ai_need_q')+'</div>');return;}task=desc;}
+  const codePart=includeCode?(t('ai_curscript')+"```hpl\n"+code.value+"\n```"):"";
+  const prompt=HPL_PRIMER+t('ai_lang_instr')+task+codePart;
+  aiBusy=true;$("#aiSend").disabled=true;aiOut('<div class="ai-msg">'+t('ai_thinking')+'</div>');
   try{
     if(useNative){const r=await window.hplNative.ai({provider,prompt});renderAIFinal((r&&(r.text||r))||"");}
     else{const r=await sampleCap(prompt,{modelTier:"default",onText:({text})=>aiStream(text)});renderAIFinal((r&&r.text)||"");}
   }
   catch(e){const c=e&&e.code;
-    if(c==="no_key"||/klucz|api key/i.test(e&&e.message||""))aiOut('<div class="ai-msg">Brak klucza API dla '+provider+'. Ustaw go w menu <b>Ustawienia → Klucze API</b>.</div>');
-    else if(c==="not_granted")aiOut('<div class="ai-msg">Brak zgody na Asystenta AI — możesz ją przyznać przy kolejnej próbie.</div>');
-    else if(c==="rate_limited")aiOut('<div class="ai-msg">Zbyt wiele zapytań naraz — spróbuj za chwilę.</div>');
-    else aiOut('<div class="ai-msg">Nie udało się uzyskać odpowiedzi'+(e&&e.message?": "+esc(e.message):"")+'.</div>');}
+    if(c==="no_key"||/klucz|api key/i.test(e&&e.message||""))aiOut('<div class="ai-msg">'+t('ai_nokey')+provider+t('ai_setkey')+'</div>');
+    else if(c==="not_granted")aiOut('<div class="ai-msg">'+t('ai_notgranted')+'</div>');
+    else if(c==="rate_limited")aiOut('<div class="ai-msg">'+t('ai_rate')+'</div>');
+    else aiOut('<div class="ai-msg">'+t('ai_failed')+(e&&e.message?": "+esc(e.message):"")+'.</div>');}
   finally{aiBusy=false;$("#aiSend").disabled=false;}
 }
 document.querySelectorAll("[data-ai]").forEach(b=>b.addEventListener("click",()=>{switchPane("paneAI");askAI(b.dataset.ai);}));
@@ -978,6 +1087,8 @@ const BLOCKS={
   ex:{label:"EXIT",fields:[],toHPL:()=>"EXIT"},
   raw:{label:"Własny wiersz HPL",fields:[{k:"code",t:"text",v:""}],toHPL:p=>p.code}
 };
+const BLK_EN={section:"Section [ ]",comment:"Comment",pinset:"Set pin",pulse:"Clock pulse",regset:"Register = value",regop:"Register: operation",sendbyte:"Send byte (MSB→LSB)",readbyte:"Read byte",loop:"LOOP loop",loopn:"Repeat N times",ifb:"Condition ?",callsub:"Call subroutine",print:"PRINT box",pause:"Pause P=",brk:"BREAK",ex:"EXIT",raw:"Custom HPL line"};
+function blLabel(type){return LANG==='en'?(BLK_EN[type]||BLOCKS[type].label):BLOCKS[type].label;}
 let blkTree=[],blkId=0;
 function blkNew(type){const b=BLOCKS[type];const params={};(b.fields||[]).forEach(f=>params[f.k]=f.v);return{id:++blkId,type,params,children:b.container?[]:null};}
 function blkRender(){const w=$("#blkWork");w.innerHTML="";w.appendChild(blkList(blkTree));blkPreview();}
@@ -985,14 +1096,14 @@ function blkList(arr){const frag=document.createElement("div");arr.forEach(n=>fr
 function blkNode(node,parentArr){
   const b=BLOCKS[node.type];const el=document.createElement("div");el.className="node"+(b.container?" container":"");
   const head=document.createElement("div");head.className="nhead";
-  const lab=document.createElement("span");lab.className="nlabel";lab.textContent=b.label;head.appendChild(lab);
+  const lab=document.createElement("span");lab.className="nlabel";lab.textContent=blLabel(node.type);head.appendChild(lab);
   (b.fields||[]).forEach(f=>{let inp;
-    if(f.t==="select"){inp=document.createElement("select");f.opts.forEach(o=>{const op=document.createElement("option");op.value=o;op.textContent=o||"(zwykłe)";inp.appendChild(op);});}
+    if(f.t==="select"){inp=document.createElement("select");f.opts.forEach(o=>{const op=document.createElement("option");op.value=o;op.textContent=o||t('blk_opt_plain');inp.appendChild(op);});}
     else inp=document.createElement("input");
     inp.value=node.params[f.k];inp.title=f.k;inp.placeholder=f.k;
     const upd=()=>{node.params[f.k]=inp.value;blkPreview();};
     inp.addEventListener("input",upd);inp.addEventListener("change",upd);head.appendChild(inp);});
-  const del=document.createElement("button");del.className="del";del.textContent="✕";del.title="Usuń blok";
+  const del=document.createElement("button");del.className="del";del.textContent="✕";del.title=t('blk_del_t');
   del.addEventListener("click",()=>{const i=parentArr.indexOf(node);if(i>=0)parentArr.splice(i,1);blkRender();});
   head.appendChild(del);el.appendChild(head);
   if(b.container){const kids=document.createElement("div");kids.className="kids";kids.appendChild(blkList(node.children));el.appendChild(kids);}
@@ -1000,28 +1111,30 @@ function blkNode(node,parentArr){
 }
 function blkAdd(arr){
   const sel=document.createElement("select");sel.className="addsel";
-  const ph=document.createElement("option");ph.value="";ph.textContent="＋ dodaj blok…";sel.appendChild(ph);
-  Object.entries(BLOCKS).forEach(([k,b])=>{const o=document.createElement("option");o.value=k;o.textContent=b.label;sel.appendChild(o);});
+  const ph=document.createElement("option");ph.value="";ph.textContent=t('blk_add');sel.appendChild(ph);
+  Object.entries(BLOCKS).forEach(([k,b])=>{const o=document.createElement("option");o.value=k;o.textContent=blLabel(k);sel.appendChild(o);});
   sel.addEventListener("change",()=>{if(sel.value){arr.push(blkNew(sel.value));blkRender();}});
   return sel;
 }
 function blkGen(arr,ind){return arr.map(node=>{const b=BLOCKS[node.type];
   if(b.container){const ch=blkGen(node.children,ind+"  ");return ind+b.toHPL(node.params,ch,ind);}
   return ind+b.toHPL(node.params);}).join("\n");}
-function blkPreview(){$("#blkPrev").textContent=blkGen(blkTree,"")||"; (dodaj bloki po lewej)";}
+function blkPreview(){$("#blkPrev").textContent=blkGen(blkTree,"")||t('blk_prev_empty');}
 $("#blocksBtn").addEventListener("click",()=>{if(!blkTree.length)blkTree=[blkNew("section"),blkNew("pinset")];$("#blkModal").classList.add("open");blkRender();});
 $("#blkClose").addEventListener("click",()=>$("#blkModal").classList.remove("open"));
 $("#blkClear2").addEventListener("click",()=>{blkTree=[];blkRender();});
-$("#blkInsert").addEventListener("click",()=>{const hpl=blkGen(blkTree,"");if(!hpl.trim()){toast("Brak bloków");return;}insertBlock("\n"+hpl+"\n");$("#blkModal").classList.remove("open");toast("Wstawiono bloki jako HPL ✓");});
+$("#blkInsert").addEventListener("click",()=>{const hpl=blkGen(blkTree,"");if(!hpl.trim()){toast(t('blk_none'));return;}insertBlock("\n"+hpl+"\n");$("#blkModal").classList.remove("open");toast(t('blk_inserted'));});
 $("#blkModal").addEventListener("click",e=>{if(e.target.id==="blkModal")$("#blkModal").classList.remove("open");});
 document.addEventListener("keydown",e=>{if(e.key==="Escape"&&$("#blkModal").classList.contains("open"))$("#blkModal").classList.remove("open");});
 
 /* ═══════════════════════════ Persistence / boot ═══════════════════════════ */
 function saveDraft(){try{localStorage.setItem("hpl_draft",code.value);}catch(_){}}
 function boot(){
-  try{const t=localStorage.getItem("hpl_theme");if(t){document.documentElement.setAttribute("data-theme",t);$("#themeSel").value=t;}}catch(_){}
+  try{const th=localStorage.getItem("hpl_theme");if(th){document.documentElement.setAttribute("data-theme",th);$("#themeSel").value=th;}}catch(_){}
+  $("#langSel").value=LANG;
   let draft="";try{draft=localStorage.getItem("hpl_draft")||"";}catch(_){}
   code.value=draft||T.spi;updateCfg();refresh();updateCursor();renderProblems([]);
+  applyLang(LANG);
 }
 boot();
 </script>
