@@ -12,6 +12,7 @@
 |---------|------|
 | `hpl-studio.html` | **HPL Studio** — samodzielny edytor HPL (jeden plik HTML). Kolorowanie składni, autouzupełnianie, krokowy symulator/debugger logiki, walidator składni, interaktywny samouczek, motywy jasny/ciemny/wysoki kontrast, generator wpisu `.cfg`, eksport `.hpl`. |
 | `docs/Przewodnik_HPL_PL.md` | **Przewodnik po języku HPL** (PL) — 16 rozdziałów z rozbiorem prawdziwych skryptów I2C / Microwire / SPI. |
+| `docs/Guide_HPL_EN.md` | English edition of the HPL guide. |
 | `examples/helloworld.hpl` | Minimalny skrypt „Hello World" (okno dialogowe). |
 | `examples/Z-MyScripts.cfg` | Przykład rejestracji skryptu w menu Orange5. |
 | `tools/x64dbg-mcp-bridge/plugin.cpp` | Poprawka mostu MCP dla x64dbg (naprawiony `attach` + komenda `waitpaused`). |
@@ -38,7 +39,7 @@ Zacznij od `docs/Przewodnik_HPL_PL.md`. Rozdziały prowadzą od podstaw (piny, r
 - [x] Przewodnik HPL (PL)
 - [x] **A** — Asystent AI (Claude) wbudowany w HPL Studio
 - [x] **B** — Tryb graficzny „klocki" (Scratch/FBD) jako opcja
-- [ ] **C** — Wersja EN przewodnika
+- [x] **C** — Wersja EN przewodnika (docs/Guide_HPL_EN.md)
 - [ ] **D** — Wersja lokalna (Electron): zapis plików, integracja DeepSeek, most do debuggera
 
 ## Licencja
