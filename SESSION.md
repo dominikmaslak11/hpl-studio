@@ -53,6 +53,26 @@ Zapis prac nad narzędziami i dokumentacją HPL dla Orange5 oraz analizą format
 ### 6. Przewodnik HPL — `docs/Przewodnik_HPL_PL.md`
 - 16 rozdziałów; studia przypadków I2C `24c02`, Microwire `9306`, SPI `25c256`.
 
+
+### 7. HPL Studio — narzędzia inżynierii wstecznej dumpów (v9–v16)
+- **Linter semantyczny** + **wirtualne układy** w debuggerze: 24C02 (I2C), 25xx (SPI), 93C46 (Microwire) z widokiem przebiegów (SDA/SCK/…). Test-benche sprawdzają logikę odczytu/zapisu na WŁASNYM dumpie.
+- **Edytor hex (ala HxD)** + edytowalna pamięć wirtualnego układu (VMEM, Uint8Array, zapis w localStorage).
+- **Rozpoznanie chipu z dumpu** (rozmiar/wzorce → kandydaci 24Cxx/93Cxx/25xx).
+- **Generator skryptu zapisującego** (dump / zmienione bajty → HPL „patch”).
+- **AI analiza dumpu** (wycinek hex + kontekst).
+- **Diff dwóch dumpów** (A vs B) + **lokalizator znanej wartości** (LE/BE/BCD/dopełnienie/skale) z podświetleniem offsetu.
+- **Kalkulator sumy kontrolnej**: SUM8/SUM16/XOR/CRC16 (CCITT-FALSE, MODBUS) nad zakresem; wektory testowe PASS.
+- **Presety kodowań desek + dekoder wartości**: wybór presetu, offset/bajty/endian/skala/jednostka, Odczyt/Zapis skalowanej wartości bezpośrednio w VMEM.
+
+### 8. RE licznika godzin 9680 (93C66) — ROZWIĄZANE
+- Dane: `C:\hack\trainingData\9680.bin` i `9680_2.bin` (512 B, 93C66 256×16, word-organized).
+- Oba dumpy różnią się **tylko** bajtami **0x150–0x151** (= word 0x0A8) → tam jest licznik.
+- **Algorytm: raw = godziny × 20, little-endian** (1 count = 3 min); NIE szyfrowanie, skalowany licznik.
+  - `9680.bin`: `d0 07 00` = 2000 → **100 h**
+  - `9680_2.bin`: `d4 08 00` = 2260 → **113 h**
+- Zapis: bajty = LE(godziny × 20) — 113 h → `d4 08 00`, 100 h → `d0 07 00`. Zweryfikowane headless (PASS).
+- Preset „9680 dash — godziny silnika (93C66)” w HPL Studio ustawiony na skalę **×20**.
+- Nauka: jeden punkt (raw↔odczyt) nie wystarcza do ustalenia skali (pierwotny błędny ×200 z odczytu „10 h”, faktycznie 100 h) — potrzebne były dwa dumpy.
 ---
 
 ## Roadmap — ZREALIZOWANE
@@ -69,7 +89,7 @@ Zapis prac nad narzędziami i dokumentacją HPL dla Orange5 oraz analizą format
 - [x] **Motywy** jasny/ciemny/wysoki kontrast/system.
 - [x] Materiały promocyjne: post na MHHAuto (kategoria „EEPROM – Microcontroller") oraz wiadomość do znajomego Vlada (`C:\hack\message_to_Vlads_friend.md`, poza repo).
 
-Wersje artefaktu HPL Studio: v1→v8 (v8 = dwujęzyczność + otwieranie plików). Skrót klawiszowy do repo w Claude Code: `/artifacts`.
+Wersje artefaktu HPL Studio: v1→v16 (v8 = dwujęzyczność + otwieranie plików; v9–v14 = linter, wirtualne układy, hex, analiza dumpów; v15–v16 = presety/dekoder wartości, skala 9680 poprawiona na ×20). Skrót do repo w Claude Code: `/artifacts`.
 
 ## Ścieżki lokalne
 - Repo: `C:\hack\hpl-studio\` · IDE: `C:\hack\hpl-studio\hpl-studio.html`
