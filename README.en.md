@@ -58,6 +58,9 @@ See `desktop/README.md`. Runs HPL Studio outside the browser sandbox, adding nat
 - [x] Virtual 24C02 (I2C) chip in the debugger — a test bench that verifies read/write logically
 - [x] Waveform view (SDA/SCK/…) and virtual **SPI 25xx** and **Microwire 93C46** test benches (alongside 24C02)
 - [x] Hex editor + editable virtual-chip memory (load a dump, edit bytes, test the script against your own dump)
+- [x] Chip recognition from a dump (by size/patterns → 24Cxx/93Cxx/25xx candidates)
+- [x] Write-script generator (dump/changed bytes → HPL 'patch' for 24C02/25xx/93C46)
+- [x] AI dump analysis (hex slice + context → fields/odometer/checksum analysis)
 ## License
 
 MIT (see `LICENSE`) — covers the original work in this repository.

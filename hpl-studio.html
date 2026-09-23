@@ -403,6 +403,7 @@
               <button class="btn sm" data-ai="generate" data-t="ai_generate">Wygeneruj z opisu</button>
               <button class="btn sm" data-ai="fix" data-t="ai_fix">Znajdź błąd</button>
               <button class="btn sm" data-ai="comment" data-t="ai_comment">Skomentuj</button>
+              <button class="btn sm" data-ai="dump" data-t="ai_dump">Analizuj dump</button>
             </div>
             <div class="ai-input">
               <textarea id="aiPrompt" data-tph="ai_ph" placeholder="Opisz, czego potrzebujesz — np. „odczyt EEPROM 93C46" — albo zadaj pytanie o HPL…"></textarea>
@@ -477,6 +478,8 @@
       <button class="btn sm" id="hexCopy" data-t="hex_copy">Kopiuj hex</button>
       <button class="btn sm" id="hexDl" data-t="hex_dl">Pobierz .bin</button>
       <button class="btn sm" id="hexFill" data-t="hex_fill">Wypełnij FF</button>
+      <button class="btn sm" id="hexRecognize" data-t="hex_recognize">🔎 Rozpoznaj</button>
+      <button class="btn sm" id="hexPatch" data-t="hex_patch">⇢ Skrypt zapisu</button>
       <span style="margin-left:auto;display:flex;gap:6px;align-items:center">
         <button class="btn sm" id="hexPrev">◀</button>
         <span id="hexPageLbl" style="font-family:var(--mono);font-size:12px"></span>
@@ -556,7 +559,13 @@ const DICT={
   chip_label:['Wirtualny układ','Virtual chip'], chip_none:['brak','none'], chip_nomap:['Wybierz układ, a skrypt musi mieć piny SDA i SCL','Select a chip; the script needs SDA and SCL pins'],
   chip_start:['START','START'], chip_stop:['STOP','STOP'], chip_wr:['ZAPIS mem','WRITE mem'], chip_rd:['ODCZYT mem','READ mem'], chip_ack:['ACK','ACK'], chip_nack:['NACK','NACK'],
   tab_wave:['Przebiegi','Waveform'], wave_empty:['Uruchom symulację z wybranym wirtualnym układem, aby zobaczyć przebiegi SDA/SCK/…','Run the simulation with a virtual chip selected to see SDA/SCK/… waveforms.'],
-  tb_hex:['🗂 Pamięć','🗂 Memory'], hex_title:['🗂 Pamięć wirtualnego układu','🗂 Virtual chip memory'], hex_sub:['Wczytaj/edytuj dump — symulator czyta i zapisuje te bajty','Load/edit a dump — the simulator reads and writes these bytes'], hex_size:['Rozmiar','Size'], hex_open:['Otwórz .bin','Open .bin'], hex_paste:['Wklej hex','Paste hex'], hex_copy:['Kopiuj hex','Copy hex'], hex_dl:['Pobierz .bin','Download .bin'], hex_fill:['Wypełnij FF','Fill FF'], hex_loaded:['Wczytano dump:','Loaded dump:'], hex_paste_prompt:['Wklej dump w hex (spacje/nowe linie OK):','Paste a hex dump (spaces/newlines OK):'], hex_bytes_word:['B','B']
+  tb_hex:['🗂 Pamięć','🗂 Memory'], hex_title:['🗂 Pamięć wirtualnego układu','🗂 Virtual chip memory'], hex_sub:['Wczytaj/edytuj dump — symulator czyta i zapisuje te bajty','Load/edit a dump — the simulator reads and writes these bytes'], hex_size:['Rozmiar','Size'], hex_open:['Otwórz .bin','Open .bin'], hex_paste:['Wklej hex','Paste hex'], hex_copy:['Kopiuj hex','Copy hex'], hex_dl:['Pobierz .bin','Download .bin'], hex_fill:['Wypełnij FF','Fill FF'], hex_loaded:['Wczytano dump:','Loaded dump:'], hex_paste_prompt:['Wklej dump w hex (spacje/nowe linie OK):','Paste a hex dump (spaces/newlines OK):'], hex_bytes_word:['B','B'],
+  hex_recognize:['🔎 Rozpoznaj','🔎 Identify'], hex_patch:['⇢ Skrypt zapisu','⇢ Write script'],
+  rec_result:['Prawdopodobne układy:','Likely chips:'], rec_blank:['Dump pusty (same 0xFF).','Dump is blank (all 0xFF).'], rec_pick_chip:['Wybierz też „Wirtualny układ" w Debuggerze.','Also pick a Virtual chip in the Debugger.'],
+  patch_none:['Brak zmienionych bajtów — generuję zapis CAŁOŚCI (może być duży).','No changed bytes — generating a FULL write (may be large).'], patch_done:['Wstawiono skrypt zapisu (','Inserted write script ('], patch_bytes:['pozycji)','entries)'], patch_pick:['Najpierw wybierz typ w „Wirtualny układ" (24C02/25xx/93C46).','First pick a type in Virtual chip (24C02/25xx/93C46).'],
+  ai_dump:['Analizuj dump','Analyze dump'], ai_dump_none:['Najpierw wczytaj dump w 🗂 Pamięć.','Load a dump in 🗂 Memory first.'],
+  ai_x_dump:['Przeanalizuj ten zrzut pamięci EEPROM/MCU. Zidentyfikuj prawdopodobne pola (liczniki/przebieg, sumy kontrolne, kopie/mirrory, VIN/PIN), zaproponuj kodowanie wartości i offsety w hex. Jeśli w opisie podano znaną wartość, znajdź ją w typowych kodowaniach (LE/BE, BCD, dopełnienie, nibble-swap).','Analyze this EEPROM/MCU memory dump. Identify likely fields (counters/odometer, checksums, copies/mirrors, VIN/PIN), propose the value encoding and hex offsets. If a known value is given, locate it across common encodings (LE/BE, BCD, complement, nibble-swap).'],
+  ai_dump_ctx:['\n\nZrzut pamięci (hex, offset: bajty):\n','\n\nMemory dump (hex, offset: bytes):\n']
 };
 function t(k){const e=DICT[k];return e?(LANG==='en'?e[1]:e[0]):k;}
 function applyStaticLang(){
@@ -962,9 +971,45 @@ function setBit(base,idx,val,ctx){const R=resolveReg(base);if(R in ctx.regs){let
 
 /* ── Virtual chip memory (editable dump, shared by all chips + hex editor) ── */
 let VMEM=(()=>{const a=new Uint8Array(256);for(let i=0;i<256;i++)a[i]=(i^0x5A)&0xFF;return a;})();
-function vmemResize(size){const a=new Uint8Array(size);a.fill(0xFF);a.set(VMEM.subarray(0,Math.min(size,VMEM.length)));VMEM=a;try{saveVmem();}catch(_){}}
+function vmemResize(size){const a=new Uint8Array(size);a.fill(0xFF);a.set(VMEM.subarray(0,Math.min(size,VMEM.length)));VMEM=a;try{saveVmem();snapVmem();}catch(_){}}
 function saveVmem(){try{localStorage.setItem("hpl_vmem",Array.from(VMEM).map(b=>b.toString(16).padStart(2,'0')).join(''));}catch(_){}}
 function loadVmem(){try{const h=localStorage.getItem("hpl_vmem");if(h&&h.length>=2){const n=h.length/2|0;const a=new Uint8Array(n);for(let i=0;i<n;i++)a[i]=parseInt(h.substr(i*2,2),16)||0;VMEM=a;}}catch(_){}}
+let VMEM_ORIG=VMEM.slice();
+function snapVmem(){VMEM_ORIG=VMEM.slice();}
+function vmemHexBlock(max){const n=Math.min(VMEM.length,max||512);let s="";for(let r=0;r<n;r+=16){let line=(r).toString(16).toUpperCase().padStart(4,'0')+": ";for(let c=0;c<16&&r+c<n;c++)line+=VMEM[r+c].toString(16).toUpperCase().padStart(2,'0')+" ";s+=line.trim()+"\n";}if(VMEM.length>n)s+="... (+"+(VMEM.length-n)+" B)\n";return s;}
+/* #3 chip recognition by size + pattern */
+function recognizeChip(){
+  const n=VMEM.length;const allFF=VMEM.every(b=>b===0xFF);
+  const bySize={128:["24C01 (I2C, 128B)","93C46 x16 (Microwire, 64×16)","25010 (SPI)"],256:["24C02 (I2C, 256B)","93C56 x16 (Microwire)","25020 (SPI)"],512:["24C04 (I2C)","93C66 x16 (Microwire)","25040 (SPI)"],1024:["24C08 (I2C, 1KB)","93C76 (Microwire)"],2048:["24C16 (I2C, 2KB)","93C86 (Microwire)"],4096:["24C32 (I2C, 4KB)","25320 (SPI)"],8192:["24C64 (I2C, 8KB)","25640 (SPI)"]};
+  const cands=bySize[n]||["Rozmiar "+n+" B — sprawdź kartę katalogową; prawdopodobnie 24Cxx / 93Cxx / 25xx"];
+  let msg=t('rec_result')+"\n • "+cands.join("\n • ");
+  if(allFF)msg=t('rec_blank')+"\n"+msg;
+  msg+="\n\n"+t('rec_pick_chip');
+  alert(msg);
+}
+/* #2 generate a write ("patch") HPL for changed bytes (or all) using the selected chip type */
+function generatePatch(){
+  let type=$("#chipSel").value; if(type==="none"){alert(t('patch_pick'));return;}
+  let idx=[];for(let i=0;i<VMEM.length;i++)if(VMEM[i]!==(VMEM_ORIG[i]??0xFF))idx.push(i);
+  let all=false; if(!idx.length){all=true;idx=[];for(let i=0;i<VMEM.length;i++)idx.push(i);toast(t('patch_none'));}
+  const hx=(v,w)=>"0x"+((v>>>0).toString(16).toUpperCase().padStart(w||2,'0'));
+  let head,wr,body,count;
+  if(type==="24c02"){
+    head=`; PATCH 24C02 — zapisuje wskazane bajty (wygenerowane przez HPL Studio)\n; CHIP=24C02,256,patch.hpl\nINFO="Patch 24C02"\nSOCKET=1 ;"I2C"\n\nPING=SDA,1\nPING=SCL,0\nCDELAY=1\nR10=0xA0\n\n[_START]\nSDA=1,SCL=1,SDA=0,SCL=0\n[_STOP]\nSCL=0,SDA=0,SCL=1,SDA=1\n[_WR]\n_START\nLOOP=(7,0){SDA=R10[I],SCL=P}\nSDA=1,SCL=1,SCL=0\nLOOP=(7,0){SDA=ADR[I],SCL=P}\nSDA=1,SCL=1,SCL=0\nLOOP=(7,0){SDA=DATA[I],SCL=P}\nSDA=1,SCL=1,SCL=0\n_STOP\nP=5000\n`;
+    body=idx.map(i=>`ADR=${hx(i)},DATA=${hx(VMEM[i])},_WR`).join("\n");count=idx.length;
+  }else if(type==="spi"){
+    head=`; PATCH 25xx SPI — zapisuje wskazane bajty (wygenerowane przez HPL Studio)\n; CHIP=25C256,32K,patch.hpl\nINFO="Patch 25xx"\nSOCKET=4 ;"SPI"\n\nPINO=SCK,0\nPINO=SI,1\nPINI=SO,1\nPINO=CS,2\nCDELAY=1\n\n[_SEND]\nLOOP=(7,0){SI=R0[I],SCK=P}\n[_WR]\nCS=0\nR0=0x06\n_SEND\nCS=1\nCS=0\nR0=0x02\n_SEND\nLOOP=(15,0){SI=ADR[I],SCK=P}\nLOOP=(7,0){SI=DATA[I],SCK=P}\nCS=1\nP=5000\n`;
+    body=idx.map(i=>`ADR=${hx(i,4)},DATA=${hx(VMEM[i])},_WR`).join("\n");count=idx.length;
+  }else{ // mw — words
+    const words=new Set();idx.forEach(i=>words.add(i>>1));const wl=[...words].sort((a,b)=>a-b);
+    head=`; PATCH 93C46 Microwire — zapisuje wskazane slowa (wygenerowane przez HPL Studio)\n; UWAGA: na sprzecie moze byc potrzebny EWEN przed zapisem\n; CHIP=93C46,64x16,patch.hpl\nINFO="Patch 93C46"\nSOCKET=2 ;"MW"\n\nPINO=CS,2\nPINO=SK,0\nPINO=DI,1\nPINI=DO,1\nCDELAY=1\n\n[_WR]\nCS=0,SK=0\nCS=1\nDI=1,SK=1,SK=0\nDI=0,SK=1,SK=0\nDI=1,SK=1,SK=0\nLOOP=(5,0){DI=ADR[I],SK=1,SK=0}\nLOOP=(15,0){DI=DATA[I],SK=1,SK=0}\nCS=0\nP=6000\n`;
+    body=wl.map(w=>`ADR=${hx(w)},DATA=${hx(VMEM[2*w]|(VMEM[2*w+1]<<8),4)},_WR`).join("\n");count=wl.length;
+  }
+  const hpl=head+"\n[PATCH]\n"+body+"\n";
+  code.value=hpl;code.setSelectionRange(0,0);refresh();updateCursor();
+  $("#hexModal").classList.remove("open");
+  toast(t('patch_done')+count+" "+t('patch_bytes'));
+}
 
 /* ── Virtual chips (unified interface: write(pinNum,v), read(pinNum)->0/1|null) ── */
 function hx2(n){return '0x'+(((n)>>>0)&0xFF).toString(16).toUpperCase().padStart(2,'0');}
@@ -1247,9 +1292,11 @@ async function askAI(mode){
   else if(mode==="fix")task=t('ai_x_fix');
   else if(mode==="comment")task=t('ai_x_comment');
   else if(mode==="generate"){includeCode=false;if(!desc){aiOut('<div class="ai-msg">'+t('ai_need_desc')+'</div>');return;}task=t('ai_x_gen')+desc+t('ai_x_gen2');}
+  else if(mode==="dump"){includeCode=false;if(!VMEM||!VMEM.length){aiOut('<div class="ai-msg">'+t('ai_dump_none')+'</div>');return;}task=t('ai_x_dump')+(desc?(" "+desc):"");}
   else{if(!desc){aiOut('<div class="ai-msg">'+t('ai_need_q')+'</div>');return;}task=desc;}
   const codePart=includeCode?(t('ai_curscript')+"```hpl\n"+code.value+"\n```"):"";
-  const prompt=HPL_PRIMER+t('ai_lang_instr')+task+codePart;
+  const dumpPart=(mode==="dump")?(t('ai_dump_ctx')+"```\n"+vmemHexBlock(1024)+"```"):"";
+  const prompt=HPL_PRIMER+t('ai_lang_instr')+task+codePart+dumpPart;
   aiBusy=true;$("#aiSend").disabled=true;aiOut('<div class="ai-msg">'+t('ai_thinking')+'</div>');
   try{
     if(useNative){const r=await window.hplNative.ai({provider,prompt});renderAIFinal((r&&(r.text||r))||"");}
@@ -1357,10 +1404,12 @@ $("#hexSize").addEventListener("change",e=>{vmemResize(+e.target.value);hexPage=
 $("#hexPrev").addEventListener("click",()=>{hexPage--;renderHex();});
 $("#hexNext").addEventListener("click",()=>{hexPage++;renderHex();});
 $("#hexGoto").addEventListener("keydown",e=>{if(e.key==="Enter"){const off=parseInt(($("#hexGoto").value||"").replace(/^0x/i,''),16);if(!isNaN(off)&&off<VMEM.length){hexPage=Math.floor(off/256);renderHex();const el=$("#hb"+off);if(el)el.focus();}}});
-$("#hexFill").addEventListener("click",()=>{VMEM.fill(0xFF);saveVmem();renderHex();toast("FF ✓");});
+$("#hexFill").addEventListener("click",()=>{VMEM.fill(0xFF);saveVmem();snapVmem();renderHex();toast("FF ✓");});
+$("#hexRecognize").addEventListener("click",recognizeChip);
+$("#hexPatch").addEventListener("click",generatePatch);
 $("#hexOpen").addEventListener("click",()=>$("#hexFileInput").click());
-$("#hexFileInput").addEventListener("change",e=>{const f=e.target.files&&e.target.files[0];if(!f)return;const rd=new FileReader();rd.onload=()=>{VMEM=new Uint8Array(rd.result);saveVmem();hexPage=0;openHex();toast(t('hex_loaded')+" "+f.name+" ("+VMEM.length+" B)");};rd.readAsArrayBuffer(f);e.target.value="";});
-$("#hexPaste").addEventListener("click",()=>{const s=prompt(t('hex_paste_prompt'));if(s==null)return;const hex=s.replace(/0x/gi,'').replace(/[^0-9a-fA-F]/g,'');if(hex.length<2)return;const n=hex.length>>1;const a=new Uint8Array(n);for(let i=0;i<n;i++)a[i]=parseInt(hex.substr(i*2,2),16);VMEM=a;saveVmem();hexPage=0;openHex();toast(t('hex_loaded')+" "+n+" B");});
+$("#hexFileInput").addEventListener("change",e=>{const f=e.target.files&&e.target.files[0];if(!f)return;const rd=new FileReader();rd.onload=()=>{VMEM=new Uint8Array(rd.result);saveVmem();snapVmem();hexPage=0;openHex();toast(t('hex_loaded')+" "+f.name+" ("+VMEM.length+" B)");};rd.readAsArrayBuffer(f);e.target.value="";});
+$("#hexPaste").addEventListener("click",()=>{const s=prompt(t('hex_paste_prompt'));if(s==null)return;const hex=s.replace(/0x/gi,'').replace(/[^0-9a-fA-F]/g,'');if(hex.length<2)return;const n=hex.length>>1;const a=new Uint8Array(n);for(let i=0;i<n;i++)a[i]=parseInt(hex.substr(i*2,2),16);VMEM=a;saveVmem();snapVmem();hexPage=0;openHex();toast(t('hex_loaded')+" "+n+" B");});
 $("#hexCopy").addEventListener("click",()=>{copyText(Array.from(VMEM).map(b=>b.toString(16).toUpperCase().padStart(2,'0')).join(' '),"hex");});
 $("#hexDl").addEventListener("click",async()=>{const name=($("#cfgChip").value.trim()||"dump")+".bin";
   if(downloads){try{await downloads.save({filename:name,data:VMEM});toast(t('dl_saved_web')+" "+name);return;}catch(_){}}
@@ -1371,7 +1420,7 @@ document.addEventListener("keydown",e=>{if(e.key==="Escape"&&$("#hexModal").clas
 /* ═══════════════════════════ Persistence / boot ═══════════════════════════ */
 function saveDraft(){try{localStorage.setItem("hpl_draft",code.value);}catch(_){}}
 function boot(){
-  loadVmem();
+  loadVmem();snapVmem();
   try{const th=localStorage.getItem("hpl_theme");if(th){document.documentElement.setAttribute("data-theme",th);$("#themeSel").value=th;}}catch(_){}
   $("#langSel").value=LANG;
   let draft="";try{draft=localStorage.getItem("hpl_draft")||"";}catch(_){}

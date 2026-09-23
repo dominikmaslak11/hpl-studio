@@ -54,6 +54,9 @@ Zacznij od `docs/Przewodnik_HPL_PL.md`. Rozdziały prowadzą od podstaw (piny, r
 - [x] Wirtualny układ 24C02 (I2C) w debuggerze — test bench sprawdzający odczyt/zapis logicznie
 - [x] Widok przebiegów (waveform) SDA/SCK/… oraz wirtualne test-benche **SPI 25xx** i **Microwire 93C46** (obok 24C02)
 - [x] Edytor hex + edytowalna pamięć wirtualnego układu (wczytaj dump, edytuj bajty, testuj skrypt na SWOIM dumpie)
+- [x] Rozpoznanie chipu z dumpu (po rozmiarze/wzorcach → kandydaci 24Cxx/93Cxx/25xx)
+- [x] Generator skryptu zapisującego (dump/zmienione bajty → HPL 'patch' dla 24C02/25xx/93C46)
+- [x] AI analizuje dump (wycinek hex + kontekst → analiza pól/przebiegu/sum kontrolnych)
 ## Licencja
 
 MIT (patrz `LICENSE`) — dotyczy oryginalnej pracy w tym repozytorium.
