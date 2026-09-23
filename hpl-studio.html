@@ -514,6 +514,21 @@
     </div>
     <div class="ana-body">
       <div class="ana-tools">
+        <div class="ana-sec" style="flex-basis:100%">
+          <h3 data-t="pre_h">Preset / dekoder wartości</h3>
+          <div class="ana-row">
+            <select id="preSel" class="txt" style="padding:4px 7px;max-width:260px"></select>
+            <span class="ana-enc" data-t="pre_off">offset</span><input class="txt" id="preOff" style="width:66px" placeholder="0x150">
+            <span class="ana-enc" data-t="pre_w">bajty</span><select id="preW" class="txt" style="padding:4px 7px"><option>1</option><option>2</option><option selected>3</option><option>4</option></select>
+            <select id="preEnd" class="txt" style="padding:4px 7px"><option value="le">LE</option><option value="be">BE</option></select>
+            <span class="ana-enc" data-t="pre_scale">× skala</span><input class="txt" id="preScale" style="width:64px" placeholder="200">
+            <span class="ana-enc" data-t="pre_unit">jedn.</span><input class="txt" id="preUnit" style="width:48px" placeholder="h">
+            <button class="btn sm" id="preRead" data-t="pre_read">Odczytaj</button>
+            <input class="txt" id="preVal" data-tph="pre_val_ph" style="width:120px" placeholder="10">
+            <button class="btn sm primary" id="preWrite" data-t="pre_write">Zapisz</button>
+            <span id="preOut" class="mh-sub"></span>
+          </div>
+        </div>
         <div class="ana-sec">
           <h3 data-t="ana_diff_h">Diff A vs B</h3>
           <div class="ana-row">
@@ -623,7 +638,8 @@ const DICT={
   ana_btn:['🔬 Analiza','🔬 Analysis'], ana_title:['🔬 Analiza dumpu','🔬 Dump analysis'], ana_sub:['Diff dwóch dumpów i lokalizator znanej wartości','Diff two dumps and locate a known value'],
   ana_diff_h:['Diff: bieżący dump (A) vs wczytany (B)','Diff: current dump (A) vs loaded (B)'], ana_load_b:['Wczytaj B (.bin)','Load B (.bin)'], ana_paste_b:['Wklej B (hex)','Paste B (hex)'], ana_diff_run:['Porównaj','Compare'], ana_no_b:['Najpierw wczytaj dump B.','Load dump B first.'], ana_diff_none:['Brak różnic (A = B na wspólnej długości).','No differences (A = B over common length).'], ana_diff_count:['różnic','differences'], ana_bfrom:['B:','B:'],
   ana_loc_h:['Lokalizator wartości (np. przebieg)','Value locator (e.g. odometer)'], ana_value_ph:['wartość dziesiętnie, np. 123456','value in decimal, e.g. 123456'], ana_locate:['Szukaj','Search'], ana_bad_value:['Podaj wartość dziesiętną.','Enter a decimal value.'], ana_no_hits:['Nie znaleziono w typowych kodowaniach. Spróbuj innej skali lub porównaj dwa dumpy (diff).','Not found in common encodings. Try another scale or compare two dumps (diff).'], ana_hits:['trafień','hits'], ana_compl:['+dopełnienie obok','+complement next'], ana_open_hex:['pokaż w hex','show in hex'],
-  chk_h:['Suma kontrolna','Checksum'], chk_from:['od','from'], chk_to:['do','to'], chk_calc:['Oblicz','Compute'], chk_off:['offset','offset'], chk_find:['znajdź','find'], chk_write:['zapisz tu','write here'], chk_range:['Zakres','Range'], chk_found:['znaleziono @','found @'], chk_notfound:['brak w dumpie','not in dump'], chk_written:['Zapisano sumę @','Wrote checksum @'], chk_bad_off:['Podaj poprawny offset zapisu (hex).','Enter a valid write offset (hex).']
+  chk_h:['Suma kontrolna','Checksum'], chk_from:['od','from'], chk_to:['do','to'], chk_calc:['Oblicz','Compute'], chk_off:['offset','offset'], chk_find:['znajdź','find'], chk_write:['zapisz tu','write here'], chk_range:['Zakres','Range'], chk_found:['znaleziono @','found @'], chk_notfound:['brak w dumpie','not in dump'], chk_written:['Zapisano sumę @','Wrote checksum @'], chk_bad_off:['Podaj poprawny offset zapisu (hex).','Enter a valid write offset (hex).'],
+  pre_h:['Preset / dekoder wartości','Preset / value decoder'], pre_sel:['Preset','Preset'], pre_custom:['— własny —','— custom —'], pre_off:['offset','offset'], pre_w:['bajty','bytes'], pre_end:['endian','endian'], pre_scale:['× skala','× scale'], pre_unit:['jedn.','unit'], pre_read:['Odczytaj','Read'], pre_write:['Zapisz','Write'], pre_val_ph:['wartość, np. 10','value, e.g. 10'], pre_current:['Odczyt:','Read:'], pre_written:['Zapisano:','Wrote:'], pre_bad:['Sprawdź offset/skalę.','Check offset/scale.'], pre_note:['raw = wartość × skala (little/big-endian pod offsetem)','raw = value × scale (little/big-endian at offset)']
 };
 function t(k){const e=DICT[k];return e?(LANG==='en'?e[1]:e[0]):k;}
 function applyStaticLang(){
@@ -638,6 +654,7 @@ function applyLang(l){
   const ls=$("#langSel"); if(ls) ls.value=l;
   applyStaticLang();
   buildPrints(); buildRef(); buildTut();
+  if(typeof popPresets==='function')popPresets();
   if($("#blkModal")&&$("#blkModal").classList.contains("open"))blkRender();
   if(typeof refresh==='function')refresh();
 }
@@ -1552,6 +1569,23 @@ $("#chkCalc").addEventListener("click",()=>{
     if($("#hexModal").classList.contains("open"))renderHex();
   }));
 });
+/* presets / value decoder */
+const PRESETS=[
+  {id:'custom',name:()=>t('pre_custom')},
+  {id:'9680hours',name:()=>'9680 dash — godziny silnika (93C66)',off:0x150,w:3,end:'le',scale:20,unit:'h'}
+];
+function popPresets(){const s=$("#preSel");if(!s)return;const cur=s.value;s.innerHTML="";PRESETS.forEach(p=>{const o=document.createElement("option");o.value=p.id;o.textContent=p.name();s.appendChild(o);});if(cur)s.value=cur;}
+function applyPreset(id){const p=PRESETS.find(x=>x.id===id);if(!p||p.id==='custom')return;$("#preOff").value='0x'+p.off.toString(16).toUpperCase();$("#preW").value=String(p.w);$("#preEnd").value=p.end;$("#preScale").value=String(p.scale);$("#preUnit").value=p.unit;preReadDo();}
+$("#preSel").addEventListener("change",e=>applyPreset(e.target.value));
+function preParams(){return{off:parseInt(($("#preOff").value||'').replace(/^0x/i,''),16),w:+$("#preW").value||1,end:$("#preEnd").value,scale:parseFloat($("#preScale").value)||1,unit:$("#preUnit").value||''};}
+function rawAt(off,w,end){let v=0;if(end==='le'){for(let i=0;i<w;i++)v+=(VMEM[off+i]||0)*Math.pow(256,i);}else{for(let i=0;i<w;i++)v=v*256+(VMEM[off+i]||0);}return v;}
+function preReadDo(){const{off,w,end,scale,unit}=preParams();if(isNaN(off)){$("#preOut").textContent=t('pre_bad');return;}const raw=rawAt(off,w,end),val=raw/scale;$("#preVal").value=Number.isInteger(val)?val:val.toFixed(3);$("#preOut").textContent=t('pre_current')+' raw='+raw+' (0x'+raw.toString(16).toUpperCase()+') → '+val+' '+unit;}
+$("#preRead").addEventListener("click",preReadDo);
+$("#preWrite").addEventListener("click",()=>{const{off,w,end,unit,scale}=preParams();if(isNaN(off)){$("#preOut").textContent=t('pre_bad');return;}const val=parseFloat($("#preVal").value);if(isNaN(val)){$("#preOut").textContent=t('pre_bad');return;}
+  let r=Math.round(val*scale);const by=[];for(let i=0;i<w;i++){by.push(r%256);r=Math.floor(r/256);}const bytes=end==='le'?by:by.slice().reverse();
+  for(let i=0;i<w&&off+i<VMEM.length;i++)VMEM[off+i]=bytes[i]&0xFF;saveVmem();if($("#hexModal").classList.contains("open"))renderHex();
+  const raw2=rawAt(off,w,end);$("#preOut").textContent=t('pre_written')+' raw='+raw2+' (0x'+raw2.toString(16).toUpperCase()+') @ 0x'+off.toString(16).toUpperCase()+' → '+(raw2/scale)+' '+unit;toast(t('pre_written')+' 0x'+off.toString(16).toUpperCase());});
+popPresets();
 document.addEventListener("keydown",e=>{if(e.key==="Escape"&&$("#anaModal").classList.contains("open"))$("#anaModal").classList.remove("open");});
 
 /* ═══════════════════════════ Persistence / boot ═══════════════════════════ */

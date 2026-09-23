@@ -63,6 +63,7 @@ See `desktop/README.md`. Runs HPL Studio outside the browser sandbox, adding nat
 - [x] AI dump analysis (hex slice + context → fields/odometer/checksum analysis)
 - [x] Dump analysis: diff two dumps (A vs B) + known-value locator (LE/BE/BCD/complement/scales) with offset jump
 - [x] Checksum calculator: SUM8/SUM16/XOR/CRC16 (CCITT, MODBUS) over a range — find in dump and write after editing
+- [x] Board encoding presets + value decoder (read/write a scaled value such as engine hours at an offset; 9680 dash / 93C66 preset)
 ## License
 
 MIT (see `LICENSE`) — covers the original work in this repository.

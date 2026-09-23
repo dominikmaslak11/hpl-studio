@@ -59,6 +59,7 @@ Zacznij od `docs/Przewodnik_HPL_PL.md`. Rozdziały prowadzą od podstaw (piny, r
 - [x] AI analizuje dump (wycinek hex + kontekst → analiza pól/przebiegu/sum kontrolnych)
 - [x] Analiza dumpu: diff dwóch dumpów (A vs B) + lokalizator znanej wartości (LE/BE/BCD/dopełnienie/skale) z podświetleniem offsetu
 - [x] Kalkulator sumy kontrolnej: SUM8/SUM16/XOR/CRC16 (CCITT, MODBUS) nad zakresem — znajdź w dumpie i zapisz po edycji
+- [x] Presety kodowań dla desek + dekoder wartości (odczyt/zapis skalowanej wartości np. godzin silnika pod offsetem; preset 9680 dash / 93C66)
 ## Licencja
 
 MIT (patrz `LICENSE`) — dotyczy oryginalnej pracy w tym repozytorium.
