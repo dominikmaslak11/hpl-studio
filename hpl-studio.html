@@ -168,6 +168,12 @@
   .pin{font-family:var(--mono);font-size:11px;padding:2px 7px;border-radius:6px;border:1px solid var(--border)}
   .pin.hi{background:var(--accent-soft);color:var(--accent);border-color:var(--accent)}
   .pin.lo{color:var(--muted)}
+  .wavewrap{overflow:auto;height:100%;padding:8px}
+  .wavewrap svg{display:block}
+  .wave-line{stroke:var(--accent);stroke-width:1.6;fill:none;vector-effect:non-scaling-stroke}
+  .wave-clk{stroke:var(--t-reg)}
+  .wave-lbl{fill:var(--muted);font-family:var(--mono);font-size:11px}
+  .wave-base{stroke:var(--border);stroke-width:1}
 
   /* problems */
   .problems{padding:6px 0}
@@ -279,6 +285,8 @@
         <option value="" data-t="tmpl_choose">— wybierz —</option>
         <option value="hello">Hello World</option>
         <option value="i2cfull">I2C 24C02 (pełny / full)</option>
+        <option value="spifull">SPI 25xx (pełny / full)</option>
+        <option value="mwfull">Microwire 93C46 (pełny / full)</option>
         <option value="i2c">I2C EEPROM 24Cxx</option>
         <option value="spi">SPI EEPROM 25Cxx</option>
         <option value="mw">Microwire 93Cxx</option>
@@ -340,6 +348,7 @@
     <div class="dock" id="dock">
       <div class="dock-tabs">
         <button class="tab active" data-pane="paneDbg" data-t="tab_dbg">Debugger</button>
+        <button class="tab" data-pane="paneWave" data-t="tab_wave">Przebiegi</button>
         <button class="tab" data-pane="paneProb"><span data-t="tab_prob">Problemy</span> <span class="badge" id="probBadge" hidden>0</span></button>
         <button class="tab" data-pane="paneTut" data-t="tab_tut">Samouczek</button>
         <button class="tab" data-pane="paneAI" data-t="tab_ai">✦ Asystent AI</button>
@@ -347,6 +356,8 @@
           <select id="chipSel" class="txt" style="padding:4px 7px" data-tt="chip_label" title="Wirtualny układ">
             <option value="none" data-t="chip_none">brak</option>
             <option value="24c02">24C02 (I2C)</option>
+            <option value="spi">25xx (SPI)</option>
+            <option value="mw">93C46 (Microwire)</option>
           </select>
           <select id="runSection" class="txt" style="padding:4px 7px" data-tt="run_title" title="Sekcja do uruchomienia"></select>
           <button class="btn sm" id="runBtn" data-tt="run_run_t" data-t="run_run" title="Uruchom">▶ Run</button>
@@ -365,6 +376,7 @@
             </div>
           </div>
         </div>
+        <div class="pane" id="paneWave"><div class="wavewrap" id="wave"></div></div>
         <div class="pane" id="paneProb"><div class="problems" id="problems"></div></div>
         <div class="pane" id="paneTut"><div class="tut"><div class="tut-list" id="tutList"></div><div class="tut-content" id="tutContent"></div></div></div>
         <div class="pane" id="paneAI">
@@ -497,7 +509,8 @@ const DICT={
   b_open:['Otwórz','Open'], t_opened:['Otwarto:','Opened:'], open_fail:['Nie udało się otworzyć pliku','Could not open the file'], c_replace_open:['Zastąpić bieżący kod otwartym plikiem?','Replace current code with the opened file?'],
   lint_undef_sub:['nieznany podprogram: ','unknown subroutine: '], lint_write_input:['zapis do pinu wejściowego: ','write to input pin: '], lint_undef_macro:['nieokreślone makro: ','undefined macro: '], lint_bit_range:['indeks bitu poza zakresem 0–31: ','bit index out of range 0–31: '], lint_undef_pin:['możliwy nieznany pin/nazwa: ','possibly undefined pin/name: '],
   chip_label:['Wirtualny układ','Virtual chip'], chip_none:['brak','none'], chip_nomap:['Wybierz układ, a skrypt musi mieć piny SDA i SCL','Select a chip; the script needs SDA and SCL pins'],
-  chip_start:['START','START'], chip_stop:['STOP','STOP'], chip_wr:['24C02: ZAPIS mem','24C02: WRITE mem'], chip_rd:['24C02: ODCZYT mem','24C02: READ mem'], chip_ack:['ACK','ACK'], chip_nack:['NACK','NACK']
+  chip_start:['START','START'], chip_stop:['STOP','STOP'], chip_wr:['ZAPIS mem','WRITE mem'], chip_rd:['ODCZYT mem','READ mem'], chip_ack:['ACK','ACK'], chip_nack:['NACK','NACK'],
+  tab_wave:['Przebiegi','Waveform'], wave_empty:['Uruchom symulację z wybranym wirtualnym układem, aby zobaczyć przebiegi SDA/SCK/…','Run the simulation with a virtual chip selected to see SDA/SCK/… waveforms.']
 };
 function t(k){const e=DICT[k];return e?(LANG==='en'?e[1]:e[0]):k;}
 function applyStaticLang(){
@@ -659,6 +672,8 @@ const T={
 hello:`; Hello World — Orange5 HPL\n; CHIP=Hello World,256,helloworld.hpl\nINFO="Pokazuje okno Hello World"\nSOCKET=0\n\n[Hello]\nPRINT=("Hello World!")\n\n[Warianty]\nPRINT=I("Info Box")\nPRINT=A("OK czy Anuluj?")\nRA?1{PRINT=("Wybrano OK")}\nRA?0{PRINT=("Wybrano Anuluj")}\n\n[END]\n`,
 i2cfull:`; 24C02 I2C EEPROM — pelny; dziala z wirtualnym ukladem (wybierz 24C02 w Debuggerze)\n; CHIP=24C02,256,my24c02.hpl\nINFO="I2C EEPROM 24C02"\nSOCKET=1 ;"I2C"\n\nPING=SDA,1\nPING=SCL,0\nCDELAY=1\n\nR10=0xA0        ; bajt kontrolny (zapis)\nR11=0xA1        ; bajt kontrolny (odczyt)\n\n[_START]\nSDA=1,SCL=1,SDA=0,SCL=0\n\n[_STOP]\nSCL=0,SDA=0,SCL=1,SDA=1\n\n[INIT]\nSDA=1,SCL=1\n\n[READ]\n_START\nLOOP=(7,0){SDA=R10[I],SCL=P}      ; control 0xA0\nSDA=1,SCL=1,SCL=0                  ; ACK\nLOOP=(7,0){SDA=ADR[I],SCL=P}      ; word address\nSDA=1,SCL=1,SCL=0                  ; ACK\n_START\nLOOP=(7,0){SDA=R11[I],SCL=P}      ; control 0xA1\nSDA=1,SCL=1,SCL=0                  ; ACK\nSDA=1\nLOOP=(7,0){SCL=1,DATA[I]=SDA,SCL=0}  ; read byte -> DATA\nSDA=1,SCL=1,SCL=0                  ; NACK\n_STOP\n\n[WRITE]\n_START\nLOOP=(7,0){SDA=R10[I],SCL=P}\nSDA=1,SCL=1,SCL=0\nLOOP=(7,0){SDA=ADR[I],SCL=P}\nSDA=1,SCL=1,SCL=0\nLOOP=(7,0){SDA=DATA[I],SCL=P}\nSDA=1,SCL=1,SCL=0\n_STOP\nP=5000\n\n[END]\nSDA=1,SCL=1\n`,
 i2c:`; I2C EEPROM 24Cxx (szkielet)\n; CHIP=24C02,256,my24c02.hpl\nINFO="I2C EEPROM 24Cxx"\nSOCKET=0\n\nPINO=SCL,0\nPINO=SDA,1\nPINI=SDAI,1\nCDELAY=1\n\n[_START]\nSDA=1,SCL=1\nSDA=0,SCL=0\n\n[_STOP]\nSDA=0,SCL=1\nSDA=1\n\n[INIT]\nSCL=1\nSDA=1\n\n[READ]\n; TODO: start, control+addr, restart, odczyt do R0\nDATA=R0\nADR=+1\n\n[WRITE]\n; TODO: start, control+addr, zapis DATA, stop\nP=5000\n\n[END]\nSDA=1,SCL=1\n`,
+spifull:`; 25xx SPI EEPROM — pelny; dziala z wirtualnym ukladem (wybierz 25xx w Debuggerze)\n; CHIP=25C256,32K,my25c256.hpl\nINFO="SPI EEPROM 25xx"\nSOCKET=4 ;"SPI"\n\nPINO=SCK,0\nPINO=SI,1\nPINI=SO,1\nPINO=CS,2\nCDELAY=1\n\n[_SEND]\nLOOP=(7,0){SI=R0[I],SCK=P}\n\n[INIT]\nCS=1\nSCK=0\n\n[READ]\nCS=1\nSCK=0\nCS=0\nR0=0x03\n_SEND                 ; READ\nLOOP=(15,0){SI=ADR[I],SCK=P}     ; 16-bit address\nSI=1\nR0=0\nLOOP=(7,0){SCK=1,R0[I]=SO,SCK=0} ; read byte -> DATA\nDATA=R0\nCS=1\n\n[WRITE]\nCS=0\nR0=0x06\n_SEND                 ; WREN\nCS=1\nCS=0\nR0=0x02\n_SEND                 ; WRITE\nLOOP=(15,0){SI=ADR[I],SCK=P}\nLOOP=(7,0){SI=DATA[I],SCK=P}\nCS=1\nP=5000\n\n[END]\nCS=1\n`,
+mwfull:`; 93C46 Microwire EEPROM (x16) — pelny; dziala z wirtualnym ukladem (wybierz 93C46 w Debuggerze)\n; CHIP=93C46,64x16,my93c46.hpl\nINFO="Microwire 93C46"\nSOCKET=2 ;"MW"\n\nPINO=CS,2\nPINO=SK,0\nPINO=DI,1\nPINI=DO,1\nCDELAY=1\n\n[INIT]\nCS=0\nSK=0\nDI=0\n\n[READ]\nCS=0,SK=0\nCS=1\nDI=1,SK=1,SK=0        ; start bit\nDI=1,SK=1,SK=0        ; opcode 1\nDI=0,SK=1,SK=0        ; opcode 0  (READ=10)\nLOOP=(5,0){DI=ADR[I],SK=1,SK=0}   ; 6-bit address\nLOOP=(15,0){SK=1,DATA[I]=DO,SK=0} ; 16 data bits -> DATA\nCS=0\n\n[WRITE]\nCS=0,SK=0\nCS=1\nDI=1,SK=1,SK=0        ; start bit\nDI=0,SK=1,SK=0        ; opcode 0\nDI=1,SK=1,SK=0        ; opcode 1  (WRITE=01)\nLOOP=(5,0){DI=ADR[I],SK=1,SK=0}\nLOOP=(15,0){DI=DATA[I],SK=1,SK=0}\nCS=0\nP=6000\n\n[END]\nCS=0\n`,
 spi:`; SPI EEPROM 25Cxx (16-bit adres) — autentyczny wzorzec\n; CHIP=25C256,32K,my25c256.hpl\nINFO="SPI EEPROM with 16 bit address"\nSOCKET=4 ;"SPI"\n\nPINO=SCK,0\nPINO=SI,1\nPINO=CS,2\nPINO=WP,3\nPINO=HOLD,4\nPINI=SO,1\nCDELAY=1\n\n[!SETUP]\n$WDELAY=10000\n\n; wyślij 8 bitów (bajt w R0)\n[_SEND]\nLOOP=(7,0){SI=R0[I],SCK=P}\n\n[INIT]\nHOLD=1\nWP=0\nCS=1\nSCK=0\n\n[READ]\nCS=1\nSCK=0\nCS=0\n_SEND(00000011b)\nLOOP=(15,0){SI=ADR[I],SCK=P}\nSI=1\nR0=0\nLOOP=(7,0){SCK=1,R0[I]=SO,SCK=0}\nDATA=R0\nCS=1\nP=1\n\n[WRITE]\nSCK=0\nCS=0,SI=0\n_SEND(00000110b)\nSI=1,CS=1\nP=20\nCS=0,SI=0\n_SEND(00000010b)\nLOOP=(15,0){SI=ADR[I],SCK=P}\nLOOP=(7,0){SI=DATA[I],SCK=P}\nSI=1,CS=1\nP=$WDELAY\n\n[END]\nCS=1\n`,
 mw:`; Microwire EEPROM 93Cxx (szkielet)\n; CHIP=93C46,64x16,my93c46.hpl\nINFO="Microwire 93Cxx"\nSOCKET=0\n\nPINO=CS,0\nPINO=SK,1\nPINO=DI,2\nPINI=DO,1\nCDELAY=1\n\n[INIT]\nCS=0\nSK=0\n\n[READ]\nCS=1\nDI=1,SK=1,SK=0\nDI=1,SK=1,SK=0\nDI=0,SK=1,SK=0\nR0=0\nLOOP=(15,0){SK=1,R0[I]=DO,SK=0}\nDATA=R0\nCS=0\nADR=+1\n\n[WRITE]\n; TODO: EWEN, WRITE, adres, dane\nP=6000\n\n[END]\nCS=0\n`,
 blank:`; Nowy skrypt HPL\n; CHIP=My Chip,256,my_script.hpl\nINFO="Opis skryptu"\nSOCKET=0\n\nPINO=CLK,0\nPINO=DAT,1\nCDELAY=1\n\n[INIT]\n\n[READ]\nDATA=R0\nADR=+1\n\n[WRITE]\n\n[END]\n`
@@ -891,29 +906,28 @@ function getVal(tok,ctx){
   const R=resolveReg(tok);
   if(R in ctx.regs)return ctx.regs[R]>>>0;
   const pu=tok.toUpperCase();
-  if(pu in ctx.pins){const p=ctx.pins[pu];if(ctx.chip&&p.num===ctx.chipSda)return ctx.chip.readSDA();return p.v;}
+  if(pu in ctx.pins){const p=ctx.pins[pu];if(ctx.chip){const r=ctx.chip.read(p.num);if(r!=null){recordWave(ctx,pu,r);return r;}}return p.v;}
   return 0;
 }
 function setReg(name,val,ctx){const R=resolveReg(name);if(R in ctx.regs){ctx.regs[R]=val>>>0;ctx.changed.add(R);}else if(name.toUpperCase() in ctx.pins){setPin(name,val,ctx);} }
-function setPin(name,val,ctx){name=name.toUpperCase();if(name in ctx.pins){const p=ctx.pins[name];p.v=val&1;ctx.log("sig",`  ${name} = ${p.v}`);if(ctx.chip){if(p.num===ctx.chipScl)ctx.chip.setSCL(p.v);else if(p.num===ctx.chipSda)ctx.chip.setSDA(p.v);}}}
+function recordWave(ctx,name,v){if(!ctx.wave)return;const w=ctx.wave;if(w.last[name]===v)return;w.last[name]=v;if(w.events.length<8000)w.events.push({t:w.t,name,v});}
+function setPin(name,val,ctx){name=name.toUpperCase();if(name in ctx.pins){const p=ctx.pins[name];p.v=val&1;ctx.log("sig",`  ${name} = ${p.v}`);if(ctx.wave)ctx.wave.t++;if(ctx.chip)ctx.chip.write(p.num,p.v);recordWave(ctx,name,p.v);}}
 function setBit(base,idx,val,ctx){const R=resolveReg(base);if(R in ctx.regs){let v=ctx.regs[R];if(val&1)v|=(1<<idx);else v&=~(1<<idx);ctx.regs[R]=v>>>0;ctx.changed.add(R);}else if(base.toUpperCase() in ctx.pins){setPin(base,val,ctx);}}
 
-/* ── Virtual 24C02 (I2C EEPROM) ── */
+/* ── Virtual chips (unified interface: write(pinNum,v), read(pinNum)->0/1|null) ── */
 function hx2(n){return '0x'+(((n)>>>0)&0xFF).toString(16).toUpperCase().padStart(2,'0');}
-function makeI2C(log){
-  const mem=new Uint8Array(256);for(let i=0;i<256;i++)mem[i]=(i^0x5A)&0xFF; // pattern so reads are visible
+function hx4(n){return '0x'+(((n)>>>0)&0xFFFF).toString(16).toUpperCase().padStart(4,'0');}
+// 24C02 I2C EEPROM. P={sda,scl}
+function makeI2C(log,P){
+  const mem=new Uint8Array(256);for(let i=0;i<256;i++)mem[i]=(i^0x5A)&0xFF;
   let mSDA=1,mSCL=1,sDrive=1,phase='IDLE',bit=0,shift=0,rw=0,waddr=0,sendByte=0;
   function start(){phase='CTRL';bit=0;shift=0;sDrive=1;log('sig','  I2C '+t('chip_start'));}
   function stop(){phase='IDLE';sDrive=1;log('sig','  I2C '+t('chip_stop'));}
-  function prepare(){ // on SCL falling: set what slave drives during next high
-    if(phase==='CTRL'||phase==='WADDR'||phase==='WDATA') sDrive=(bit===8)?0:1;
-    else if(phase==='READ') sDrive=(bit<8)?((sendByte>>(7-bit))&1):1;
-    else sDrive=1;
-  }
+  function prepare(){ if(phase==='CTRL'||phase==='WADDR'||phase==='WDATA')sDrive=(bit===8)?0:1; else if(phase==='READ')sDrive=(bit<8)?((sendByte>>(7-bit))&1):1; else sDrive=1; }
   function rising(){
     if(phase==='CTRL'||phase==='WADDR'||phase==='WDATA'){
       if(bit<8){shift=((shift<<1)|(mSDA&1))&0xFF;}
-      if(bit===8){ // master reads our ACK (0); process the received byte
+      if(bit===8){
         if(phase==='CTRL'){rw=shift&1;phase=rw?'READ':'WADDR';if(rw){sendByte=mem[waddr&0xFF];}}
         else if(phase==='WADDR'){waddr=shift&0xFF;phase='WDATA';}
         else{mem[waddr&0xFF]=shift;log('sig','  '+t('chip_wr')+'['+hx2(waddr)+']='+hx2(shift)+' '+t('chip_ack'));waddr=(waddr+1)&0xFF;}
@@ -921,18 +935,49 @@ function makeI2C(log){
       }
     }else if(phase==='READ'){
       if(bit<8){if(bit===7)log('sig','  '+t('chip_rd')+'['+hx2(waddr)+']='+hx2(sendByte));}
-      else{ // master drives ACK/NACK
-        if((mSDA&1)===0){waddr=(waddr+1)&0xFF;sendByte=mem[waddr&0xFF];}else phase='RDDONE';
-        bit=0;return;
-      }
+      else{if((mSDA&1)===0){waddr=(waddr+1)&0xFF;sendByte=mem[waddr&0xFF];}else phase='RDDONE';bit=0;return;}
     }
     bit++;
   }
-  return{
-    setSCL(v){v=v&1;const r=(mSCL===0&&v===1),f=(mSCL===1&&v===0);mSCL=v;if(r)rising();else if(f)prepare();},
-    setSDA(v){v=v&1;const old=mSDA;mSDA=v;if(mSCL===1){if(old===1&&v===0)start();else if(old===0&&v===1)stop();}},
-    readSDA(){return mSDA&sDrive;}, mem
-  };
+  function setSCL(v){v&=1;const r=(mSCL===0&&v===1),f=(mSCL===1&&v===0);mSCL=v;if(r)rising();else if(f)prepare();}
+  function setSDA(v){v&=1;const o=mSDA;mSDA=v;if(mSCL===1){if(o===1&&v===0)start();else if(o===0&&v===1)stop();}}
+  return{write:(n,v)=>{if(n===P.scl)setSCL(v);else if(n===P.sda)setSDA(v);},read:(n)=>n===P.sda?(mSDA&sDrive):null};
+}
+// 25xx SPI EEPROM (16-bit addr). P={sck,si,so,cs}
+function makeSPI(log,P){
+  const mem=new Uint8Array(65536);for(let i=0;i<65536;i++)mem[i]=(i^0x5A)&0xFF;
+  let cs=1,sck=0,si=0,so=0,phase='IDLE',n=0,shift=0,addr=0,sendByte=0,status=0;
+  function csEdge(v){if(cs===1&&v===0){phase='CMD';n=0;shift=0;log('sig','  SPI CS↓');}else if(cs===0&&v===1){phase='IDLE';log('sig','  SPI CS↑');}cs=v;}
+  function decode(){const c=shift;if(c===0x03){phase='RADDR';n=0;addr=0;}else if(c===0x02){phase='WADDR';n=0;addr=0;}else if(c===0x06){status|=2;phase='WAIT';log('sig','  SPI WREN');}else if(c===0x05){phase='RDSR';sendByte=status;n=0;}else if(c===0x01){phase='WRSR';n=0;shift=0;}else phase='WAIT';}
+  function rising(){
+    if(phase==='CMD'){shift=((shift<<1)|si)&0xFF;n++;if(n===8)decode();}
+    else if(phase==='RADDR'){addr=((addr<<1)|si)&0xFFFF;n++;if(n===16){phase='READ';n=0;sendByte=mem[addr];}}
+    else if(phase==='WADDR'){addr=((addr<<1)|si)&0xFFFF;n++;if(n===16){phase='WDATA';n=0;shift=0;}}
+    else if(phase==='WDATA'){shift=((shift<<1)|si)&0xFF;n++;if(n===8){mem[addr]=shift;log('sig','  '+t('chip_wr')+'['+hx4(addr)+']='+hx2(shift));addr=(addr+1)&0xFFFF;n=0;shift=0;}}
+    else if(phase==='WRSR'){shift=((shift<<1)|si)&0xFF;n++;if(n===8){status=shift;phase='WAIT';}}
+    else if(phase==='READ'){n++;if(n===8){log('sig','  '+t('chip_rd')+'['+hx4(addr)+']='+hx2(sendByte));addr=(addr+1)&0xFFFF;sendByte=mem[addr];n=0;}}
+    else if(phase==='RDSR'){n++;if(n===8)n=0;}
+  }
+  function falling(){so=(phase==='READ'||phase==='RDSR')?((sendByte>>(7-n))&1):0;}
+  function setSCK(v){v&=1;const r=(sck===0&&v===1),f=(sck===1&&v===0);sck=v;if(r)rising();else if(f)falling();}
+  return{write:(nn,v)=>{if(nn===P.cs)csEdge(v&1);else if(nn===P.sck)setSCK(v);else if(nn===P.si)si=v&1;},read:(nn)=>nn===P.so?so:null};
+}
+// 93C46 Microwire EEPROM (x16, 6-bit addr, standard, no dummy bit). P={clk,di,do,cs}
+function makeMW(log,P){
+  const mem=new Uint16Array(64);for(let i=0;i<64;i++)mem[i]=((i^0x5A)|(((i^0x3C)&0xFF)<<8))&0xFFFF;
+  let cs=0,clk=0,di=0,dob=1,phase='IDLE',n=0,shift=0,op=0,addr=0,word=0;
+  function csEdge(v){if(v===1&&cs===0){phase='START';n=0;shift=0;log('sig','  MW CS↑');}else if(v===0&&cs===1){phase='IDLE';dob=1;}cs=v;}
+  function rising(){
+    if(cs!==1)return;
+    if(phase==='START'){if(di===1){phase='OP';n=0;shift=0;}return;}
+    if(phase==='OP'){shift=((shift<<1)|di)&3;n++;if(n===2){op=shift;phase='ADDR';n=0;shift=0;}return;}
+    if(phase==='ADDR'){shift=((shift<<1)|di)&0x3F;n++;if(n===6){addr=shift&0x3F;if(op===2){phase='READ';n=0;word=mem[addr];log('sig','  '+t('chip_rd')+'['+hx2(addr)+']='+hx4(word));}else if(op===1){phase='WDATA';n=0;shift=0;}else phase='DONE';}return;}
+    if(phase==='WDATA'){shift=((shift<<1)|di)&0xFFFF;n++;if(n===16){mem[addr]=shift;log('sig','  '+t('chip_wr')+'['+hx2(addr)+']='+hx4(shift));phase='DONE';}return;}
+    if(phase==='READ'){n++;if(n===16)phase='DONE';return;}
+  }
+  function falling(){dob=(phase==='READ')?((word>>(15-n))&1):1;}
+  function setCLK(v){v&=1;const r=(clk===0&&v===1),f=(clk===1&&v===0);clk=v;if(r)rising();else if(f)falling();}
+  return{write:(nn,v)=>{if(nn===P.cs)csEdge(v&1);else if(nn===P.clk)setCLK(v);else if(nn===P.di)di=v&1;},read:(nn)=>nn===P.do?dob:null};
 }
 function execSimple(text,ctx){
   const tt=text.trim();if(!tt)return;
@@ -1036,16 +1081,35 @@ function renderWatch(ctx){
   const pv=$("#pinsView");pv.innerHTML="";
   Object.entries(ctx.pins).forEach(([n,p])=>{const el=document.createElement("span");el.className="pin "+(p.v?"hi":"lo");el.textContent=n+":"+p.v;pv.appendChild(el);});
 }
+function renderWave(ctx){
+  const host=$("#wave");if(!host)return;
+  if(!ctx||!ctx.wave||!ctx.wave.events.length){host.innerHTML='<div class="prob-empty">'+t('wave_empty')+'</div>';return;}
+  const w=ctx.wave, names=w.pins.filter(n=>w.events.some(e=>e.name===n));
+  if(!names.length){host.innerHTML='<div class="prob-empty">'+t('wave_empty')+'</div>';return;}
+  const maxT=Math.max(1,w.t), px=Math.max(3,Math.min(9,Math.floor(1400/maxT)||6)), left=56,rowH=30,top=10;
+  const width=left+maxT*px+24,height=top+names.length*rowH+8;
+  let s=`<svg width="${width}" height="${height}" viewBox="0 0 ${width} ${height}" xmlns="http://www.w3.org/2000/svg">`;
+  names.forEach((nm,i)=>{const y0=top+i*rowH,yhi=y0+4,ylo=y0+20;
+    s+=`<text class="wave-lbl" x="6" y="${ylo}">${esc(nm)}</text>`;
+    s+=`<line class="wave-base" x1="${left}" y1="${ylo+2}" x2="${left+maxT*px}" y2="${ylo+2}"/>`;
+    const evs=w.events.filter(e=>e.name===nm);let cur=evs.length?evs[0].v:0;let pts=`${left},${cur?yhi:ylo}`;
+    evs.forEach(e=>{const x=(left+e.t*px).toFixed(1);if(e.v!==cur){pts+=` ${x},${cur?yhi:ylo} ${x},${e.v?yhi:ylo}`;cur=e.v;}});
+    pts+=` ${left+maxT*px},${cur?yhi:ylo}`;
+    s+=`<polyline class="wave-line${/SCK|SCL|CLK|SK/i.test(nm)?' wave-clk':''}" points="${pts}"/>`;});
+  s+='</svg>';host.innerHTML=s;
+}
 function startDebug(){
   const prog=parseProgram();const secName=$("#runSection").value;
   if(!secName||!prog.sections[secName]){toast(t('dbg_nosec'));return null;}
   $("#console").innerHTML="";
   const ctx=newCtx(prog);
-  if($("#chipSel").value==="24c02"){
-    let sda=-1,scl=-1;
-    Object.entries(prog.pins).forEach(([nm,p])=>{if(/SDA/.test(nm)&&sda<0)sda=p.num;if(/SCL/.test(nm)&&scl<0)scl=p.num;});
-    if(sda>=0&&scl>=0){ctx.chip=makeI2C(ctx.log);ctx.chipSda=sda;ctx.chipScl=scl;ctx.log("sys","🔌 24C02  (SDA=pin"+sda+", SCL=pin"+scl+")");}
-    else ctx.log("errln","⚠ "+t('chip_nomap'));
+  const chipType=$("#chipSel").value;
+  if(chipType!=="none"){
+    ctx.wave={t:0,events:[],last:{},pins:Object.keys(prog.pins)};
+    const fp=(re)=>{let num=-1;Object.entries(prog.pins).forEach(([nm,p])=>{if(num<0&&re.test(nm))num=p.num;});return num;};
+    if(chipType==="24c02"){const sda=fp(/SDA/),scl=fp(/SCL/);if(sda>=0&&scl>=0){ctx.chip=makeI2C(ctx.log,{sda,scl});ctx.log("sys","🔌 24C02 I2C (SDA=p"+sda+", SCL=p"+scl+")");}else ctx.log("errln","⚠ "+t('chip_nomap'));}
+    else if(chipType==="spi"){const sck=fp(/SCK|SCLK|CLK/),si=fp(/^SI$|MOSI/),so=fp(/^SO$|MISO/),cs=fp(/CS|\bSS\b/);if(sck>=0&&si>=0&&so>=0&&cs>=0){ctx.chip=makeSPI(ctx.log,{sck,si,so,cs});ctx.log("sys","🔌 25xx SPI (SCK=p"+sck+", SI=p"+si+", SO=p"+so+", CS=p"+cs+")");}else ctx.log("errln","⚠ "+t('chip_nomap'));}
+    else if(chipType==="mw"){const clk=fp(/CLK|\bSK\b/),di=fp(/^DI$/),dout=fp(/^DO$/),cs=fp(/CS/);if(clk>=0&&di>=0&&dout>=0&&cs>=0){ctx.chip=makeMW(ctx.log,{clk,di,do:dout,cs});ctx.log("sys","🔌 93C46 MW (CLK=p"+clk+", DI=p"+di+", DO=p"+dout+", CS=p"+cs+")");}else ctx.log("errln","⚠ "+t('chip_nomap'));}
   }
   const st={i:0,line:prog.sections[secName].line};
   const nodes=parseNodes(prog.sections[secName].body,st);
@@ -1057,7 +1121,7 @@ function startDebug(){
 $("#runBtn").addEventListener("click",()=>{
   if(!startDebug())return;const{ctx,gen}=DBG;let r,guard=0;
   do{ctx.changed.clear();r=gen.next();guard++;}while(!r.done&&!ctx.halt&&guard<400000);
-  setCurLine(-1);renderWatch(ctx);ctx.log("okln",t('dbg_end')+" ("+ctx.steps+" "+t('dbg_kroki')+")");$("#stState").textContent=t('st_done');
+  setCurLine(-1);renderWatch(ctx);renderWave(ctx);ctx.log("okln",t('dbg_end')+" ("+ctx.steps+" "+t('dbg_kroki')+")");$("#stState").textContent=t('st_done');
 });
 $("#stepBtn").addEventListener("click",()=>{
   if(!DBG||!DBG.gen){if(!startDebug())return;}
@@ -1065,9 +1129,9 @@ $("#stepBtn").addEventListener("click",()=>{
   const r=gen.next();
   if(r.done||ctx.halt){setCurLine(-1);ctx.log("okln",t('dbg_end'));$("#stState").textContent=t('st_done');DBG.gen=null;}
   else{setCurLine(r.value);$("#stState").textContent=t('st_step_at')+" "+r.value;}
-  renderWatch(ctx);
+  renderWatch(ctx);renderWave(ctx);
 });
-$("#resetBtn").addEventListener("click",()=>{DBG=null;setCurLine(-1);$("#console").innerHTML="";$("#regs").innerHTML="";$("#pinsView").innerHTML="";$("#stState").textContent=t('st_ready');toast(t('t_reset'));});
+$("#resetBtn").addEventListener("click",()=>{DBG=null;setCurLine(-1);$("#console").innerHTML="";$("#regs").innerHTML="";$("#pinsView").innerHTML="";$("#wave").innerHTML="";$("#stState").textContent=t('st_ready');toast(t('t_reset'));});
 
 /* ═══════════════════════════ Reference cheat-sheet ═══════════════════════════ */
 const REF=[

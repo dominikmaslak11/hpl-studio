@@ -56,6 +56,7 @@ See `desktop/README.md`. Runs HPL Studio outside the browser sandbox, adding nat
 
 - [x] Semantic linter (unknown subroutine, write to input pin, undefined macro, bit index, unknown pin)
 - [x] Virtual 24C02 (I2C) chip in the debugger — a test bench that verifies read/write logically
+- [x] Waveform view (SDA/SCK/…) and virtual **SPI 25xx** and **Microwire 93C46** test benches (alongside 24C02)
 ## License
 
 MIT (see `LICENSE`) — covers the original work in this repository.
