@@ -530,6 +530,16 @@
             <button class="btn sm primary" id="anaLocate" data-t="ana_locate">Szukaj</button>
           </div>
         </div>
+        <div class="ana-sec">
+          <h3 data-t="chk_h">Suma kontrolna</h3>
+          <div class="ana-row">
+            <span class="ana-enc" data-t="chk_from">od</span><input class="txt" id="chkFrom" placeholder="0x00" style="width:66px">
+            <span class="ana-enc" data-t="chk_to">do</span><input class="txt" id="chkTo" placeholder="auto" style="width:66px">
+            <button class="btn sm primary" id="chkCalc" data-t="chk_calc">Oblicz</button>
+            <span class="ana-enc" data-t="chk_off">offset</span><input class="txt" id="chkOff" placeholder="0xFE" style="width:66px">
+            <select id="chkEndian" class="txt" style="padding:4px 7px"><option value="le">LE</option><option value="be">BE</option></select>
+          </div>
+        </div>
       </div>
       <div class="ana-results" id="anaResults"></div>
     </div>
@@ -612,7 +622,8 @@ const DICT={
   ai_dump_ctx:['\n\nZrzut pamięci (hex, offset: bajty):\n','\n\nMemory dump (hex, offset: bytes):\n'],
   ana_btn:['🔬 Analiza','🔬 Analysis'], ana_title:['🔬 Analiza dumpu','🔬 Dump analysis'], ana_sub:['Diff dwóch dumpów i lokalizator znanej wartości','Diff two dumps and locate a known value'],
   ana_diff_h:['Diff: bieżący dump (A) vs wczytany (B)','Diff: current dump (A) vs loaded (B)'], ana_load_b:['Wczytaj B (.bin)','Load B (.bin)'], ana_paste_b:['Wklej B (hex)','Paste B (hex)'], ana_diff_run:['Porównaj','Compare'], ana_no_b:['Najpierw wczytaj dump B.','Load dump B first.'], ana_diff_none:['Brak różnic (A = B na wspólnej długości).','No differences (A = B over common length).'], ana_diff_count:['różnic','differences'], ana_bfrom:['B:','B:'],
-  ana_loc_h:['Lokalizator wartości (np. przebieg)','Value locator (e.g. odometer)'], ana_value_ph:['wartość dziesiętnie, np. 123456','value in decimal, e.g. 123456'], ana_locate:['Szukaj','Search'], ana_bad_value:['Podaj wartość dziesiętną.','Enter a decimal value.'], ana_no_hits:['Nie znaleziono w typowych kodowaniach. Spróbuj innej skali lub porównaj dwa dumpy (diff).','Not found in common encodings. Try another scale or compare two dumps (diff).'], ana_hits:['trafień','hits'], ana_compl:['+dopełnienie obok','+complement next'], ana_open_hex:['pokaż w hex','show in hex']
+  ana_loc_h:['Lokalizator wartości (np. przebieg)','Value locator (e.g. odometer)'], ana_value_ph:['wartość dziesiętnie, np. 123456','value in decimal, e.g. 123456'], ana_locate:['Szukaj','Search'], ana_bad_value:['Podaj wartość dziesiętną.','Enter a decimal value.'], ana_no_hits:['Nie znaleziono w typowych kodowaniach. Spróbuj innej skali lub porównaj dwa dumpy (diff).','Not found in common encodings. Try another scale or compare two dumps (diff).'], ana_hits:['trafień','hits'], ana_compl:['+dopełnienie obok','+complement next'], ana_open_hex:['pokaż w hex','show in hex'],
+  chk_h:['Suma kontrolna','Checksum'], chk_from:['od','from'], chk_to:['do','to'], chk_calc:['Oblicz','Compute'], chk_off:['offset','offset'], chk_find:['znajdź','find'], chk_write:['zapisz tu','write here'], chk_range:['Zakres','Range'], chk_found:['znaleziono @','found @'], chk_notfound:['brak w dumpie','not in dump'], chk_written:['Zapisano sumę @','Wrote checksum @'], chk_bad_off:['Podaj poprawny offset zapisu (hex).','Enter a valid write offset (hex).']
 };
 function t(k){const e=DICT[k];return e?(LANG==='en'?e[1]:e[0]):k;}
 function applyStaticLang(){
@@ -1513,6 +1524,33 @@ $("#anaLocate").addEventListener("click",()=>{
     html+=`<div class="ana-hit"><span class="ana-off" data-off="${h.o}">${h.o.toString(16).toUpperCase().padStart(4,'0')}</span><span>${bytesHex}</span><span class="ana-enc">${esc(h.label)}</span>${extra}</div>`;});
   if(hits.length>300)html+='<div class="ana-h3">… (+'+(hits.length-300)+')</div>';
   $("#anaResults").innerHTML=html;bindOff();
+});
+/* checksums */
+function ck_sum8(a,f,to){let s=0;for(let i=f;i<=to&&i<a.length;i++)s=(s+a[i])&0xFF;return s;}
+function ck_xor8(a,f,to){let s=0;for(let i=f;i<=to&&i<a.length;i++)s^=a[i];return s&0xFF;}
+function ck_sum16(a,f,to){let s=0;for(let i=f;i<=to&&i<a.length;i++)s=(s+a[i])&0xFFFF;return s;}
+function ck_crcccitt(a,f,to){let c=0xFFFF;for(let i=f;i<=to&&i<a.length;i++){c^=(a[i]<<8);for(let k=0;k<8;k++)c=(c&0x8000)?(((c<<1)^0x1021)&0xFFFF):((c<<1)&0xFFFF);}return c&0xFFFF;}
+function ck_crcmodbus(a,f,to){let c=0xFFFF;for(let i=f;i<=to&&i<a.length;i++){c^=a[i];for(let k=0;k<8;k++)c=(c&1)?((c>>>1)^0xA001):(c>>>1);}return c&0xFFFF;}
+function chkList(f,to){const a=VMEM,s8=ck_sum8(a,f,to);return [{label:'SUM8',w:1,v:s8},{label:'SUM8 neg (2C)',w:1,v:(256-s8)&0xFF},{label:'XOR8',w:1,v:ck_xor8(a,f,to)},{label:'SUM16',w:2,v:ck_sum16(a,f,to)},{label:'CRC16-CCITT',w:2,v:ck_crcccitt(a,f,to)},{label:'CRC16-MODBUS',w:2,v:ck_crcmodbus(a,f,to)}];}
+function bytesOf(v,w,endian){if(w===1)return [v&0xFF];const lo=v&0xFF,hi=(v>>8)&0xFF;return endian==='be'?[hi,lo]:[lo,hi];}
+$("#chkCalc").addEventListener("click",()=>{
+  let f=parseInt(($("#chkFrom").value||'0').replace(/^0x/i,''),16);if(isNaN(f))f=0;
+  const toRaw=($("#chkTo").value||'').replace(/^0x/i,'');let to=toRaw?parseInt(toRaw,16):(VMEM.length-3);
+  if(isNaN(to)||to>=VMEM.length)to=VMEM.length-1;if(to<f)to=VMEM.length-1;
+  const endian=$("#chkEndian").value,list=chkList(f,to);
+  let html='<div class="ana-h3">'+t('chk_range')+' '+f.toString(16).toUpperCase().padStart(4,'0')+'–'+to.toString(16).toUpperCase().padStart(4,'0')+'</div>';
+  list.forEach(c=>{const bs=bytesOf(c.v,c.w,endian),hexv=c.w===1?hx2b(c.v):c.v.toString(16).toUpperCase().padStart(4,'0');
+    const found=findBytes(VMEM,Uint8Array.from(bs));
+    const foundTxt=found.length?('<span class="ana-off" data-off="'+found[0]+'">'+t('chk_found')+' '+found.slice(0,4).map(o=>o.toString(16).toUpperCase().padStart(4,'0')).join(', ')+'</span>'):('<span class="ana-enc">'+t('chk_notfound')+'</span>');
+    html+=`<div class="ana-hit"><span style="width:130px;flex:none">${esc(c.label)}</span><span style="width:60px;flex:none">${hexv}</span><span>${foundTxt}</span><button class="btn sm chkw" data-v="${c.v}" data-w="${c.w}" style="margin-left:auto">${esc(t('chk_write'))}</button></div>`;});
+  $("#anaResults").innerHTML=html;bindOff();
+  $("#anaResults").querySelectorAll(".chkw").forEach(b=>b.addEventListener("click",()=>{
+    let off=parseInt(($("#chkOff").value||'').replace(/^0x/i,''),16);if(isNaN(off)){alert(t('chk_bad_off'));return;}
+    const bs=bytesOf(+b.dataset.v,+b.dataset.w,$("#chkEndian").value);
+    for(let k=0;k<bs.length&&off+k<VMEM.length;k++)VMEM[off+k]=bs[k];saveVmem();
+    toast(t('chk_written')+' '+off.toString(16).toUpperCase().padStart(4,'0'));
+    if($("#hexModal").classList.contains("open"))renderHex();
+  }));
 });
 document.addEventListener("keydown",e=>{if(e.key==="Escape"&&$("#anaModal").classList.contains("open"))$("#anaModal").classList.remove("open");});
 

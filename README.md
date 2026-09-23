@@ -58,6 +58,7 @@ Zacznij od `docs/Przewodnik_HPL_PL.md`. Rozdziały prowadzą od podstaw (piny, r
 - [x] Generator skryptu zapisującego (dump/zmienione bajty → HPL 'patch' dla 24C02/25xx/93C46)
 - [x] AI analizuje dump (wycinek hex + kontekst → analiza pól/przebiegu/sum kontrolnych)
 - [x] Analiza dumpu: diff dwóch dumpów (A vs B) + lokalizator znanej wartości (LE/BE/BCD/dopełnienie/skale) z podświetleniem offsetu
+- [x] Kalkulator sumy kontrolnej: SUM8/SUM16/XOR/CRC16 (CCITT, MODBUS) nad zakresem — znajdź w dumpie i zapisz po edycji
 ## Licencja
 
 MIT (patrz `LICENSE`) — dotyczy oryginalnej pracy w tym repozytorium.

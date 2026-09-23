@@ -62,6 +62,7 @@ See `desktop/README.md`. Runs HPL Studio outside the browser sandbox, adding nat
 - [x] Write-script generator (dump/changed bytes → HPL 'patch' for 24C02/25xx/93C46)
 - [x] AI dump analysis (hex slice + context → fields/odometer/checksum analysis)
 - [x] Dump analysis: diff two dumps (A vs B) + known-value locator (LE/BE/BCD/complement/scales) with offset jump
+- [x] Checksum calculator: SUM8/SUM16/XOR/CRC16 (CCITT, MODBUS) over a range — find in dump and write after editing
 ## License
 
 MIT (see `LICENSE`) — covers the original work in this repository.
