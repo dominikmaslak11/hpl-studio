@@ -53,6 +53,7 @@ Zacznij od `docs/Przewodnik_HPL_PL.md`. Rozdziały prowadzą od podstaw (piny, r
 - [x] Linter semantyczny (nieznany podprogram, zapis do pinu wejściowego, nieokreślone makro, indeks bitu, nieznany pin)
 - [x] Wirtualny układ 24C02 (I2C) w debuggerze — test bench sprawdzający odczyt/zapis logicznie
 - [x] Widok przebiegów (waveform) SDA/SCK/… oraz wirtualne test-benche **SPI 25xx** i **Microwire 93C46** (obok 24C02)
+- [x] Edytor hex + edytowalna pamięć wirtualnego układu (wczytaj dump, edytuj bajty, testuj skrypt na SWOIM dumpie)
 ## Licencja
 
 MIT (patrz `LICENSE`) — dotyczy oryginalnej pracy w tym repozytorium.

@@ -233,6 +233,18 @@
   .modal-foot{display:flex;gap:8px;justify-content:flex-end;padding:12px 16px;border-top:1px solid var(--border)}
   @media(max-width:820px){.modal-body{grid-template-columns:1fr;grid-auto-rows:minmax(120px,auto)}
     .blk-prev{border-left:0;border-top:1px solid var(--border)}}
+  /* hex editor */
+  .hex-toolbar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;padding:10px 14px;border-bottom:1px solid var(--border)}
+  .hex-grid-wrap{flex:1;overflow:auto;padding:10px 14px;background:var(--bg);min-height:200px}
+  .hex-grid{font-family:var(--mono);font-size:12.5px;width:max-content}
+  .hex-row{display:flex;gap:10px;align-items:center;line-height:22px}
+  .hex-off{color:var(--muted);width:58px;flex:none;text-align:right}
+  .hex-bytes{display:flex;gap:2px}
+  .hex-b{width:21px;text-align:center;border:1px solid transparent;background:transparent;color:var(--text);font-family:var(--mono);font-size:12.5px;border-radius:4px;padding:1px 0;text-transform:uppercase}
+  .hex-b:hover{border-color:var(--border)}
+  .hex-b:focus{outline:none;border-color:var(--accent);background:var(--accent-soft);color:var(--accent)}
+  .hex-b.gap{margin-left:8px}
+  .hex-ascii{margin-left:12px;color:var(--muted);white-space:pre;letter-spacing:1px}
 
   .statusbar{display:flex;align-items:center;gap:14px;flex-wrap:wrap;padding:6px 14px;
     background:var(--panel2);border-top:1px solid var(--border);font-family:var(--mono);
@@ -330,6 +342,7 @@
     <div class="editor-toolbar">
       <span class="name"><span class="dot" id="savedDot"></span><span id="fileName">nowy_skrypt.hpl</span></span>
       <button class="btn sm" id="blocksBtn" data-tt="tb_blocks_title" data-t="tb_blocks" title="Programowanie blokami (opcja)">🧩 Bloki</button>
+      <button class="btn sm" id="hexBtn" data-tt="hex_title" data-t="tb_hex" title="Pamięć wirtualnego układu (hex)">🗂 Pamięć</button>
       <button class="btn sm" id="fmtBtn" data-t="tb_format">Porządkuj</button>
       <button class="btn sm" id="clearBtn" data-t="tb_clear">Wyczyść</button>
     </div>
@@ -445,6 +458,38 @@
   </div>
 </div>
 
+<div class="modal" id="hexModal">
+  <div class="modal-box">
+    <div class="modal-head">
+      <h2 data-t="hex_title">🗂 Pamięć wirtualnego układu</h2>
+      <span class="mh-sub" data-t="hex_sub">Wczytaj/edytuj dump — symulator czyta i zapisuje te bajty</span>
+      <button class="btn sm close" id="hexClose" data-t="blk_close">✕ Zamknij</button>
+    </div>
+    <div class="hex-toolbar">
+      <label class="field" style="flex-direction:row;align-items:center;gap:6px"><span data-t="hex_size">Rozmiar</span>
+        <select id="hexSize" class="txt" style="padding:4px 7px">
+          <option value="128">128 B</option><option value="256">256 B</option><option value="512">512 B</option>
+          <option value="1024">1 KB</option><option value="2048">2 KB</option><option value="4096">4 KB</option><option value="8192">8 KB</option>
+        </select>
+      </label>
+      <button class="btn sm" id="hexOpen" data-t="hex_open">Otwórz .bin</button>
+      <button class="btn sm" id="hexPaste" data-t="hex_paste">Wklej hex</button>
+      <button class="btn sm" id="hexCopy" data-t="hex_copy">Kopiuj hex</button>
+      <button class="btn sm" id="hexDl" data-t="hex_dl">Pobierz .bin</button>
+      <button class="btn sm" id="hexFill" data-t="hex_fill">Wypełnij FF</button>
+      <span style="margin-left:auto;display:flex;gap:6px;align-items:center">
+        <button class="btn sm" id="hexPrev">◀</button>
+        <span id="hexPageLbl" style="font-family:var(--mono);font-size:12px"></span>
+        <button class="btn sm" id="hexNext">▶</button>
+        <input class="txt" id="hexGoto" placeholder="offset hex" style="width:92px;padding:4px 7px">
+      </span>
+      <input type="file" id="hexFileInput" hidden>
+    </div>
+    <div class="hex-grid-wrap"><div id="hexGrid" class="hex-grid"></div></div>
+    <div class="modal-foot" style="justify-content:flex-start"><span class="mh-sub" id="hexInfo"></span></div>
+  </div>
+</div>
+
 <div class="toast" id="toast"></div>
 
 <script>
@@ -510,7 +555,8 @@ const DICT={
   lint_undef_sub:['nieznany podprogram: ','unknown subroutine: '], lint_write_input:['zapis do pinu wejściowego: ','write to input pin: '], lint_undef_macro:['nieokreślone makro: ','undefined macro: '], lint_bit_range:['indeks bitu poza zakresem 0–31: ','bit index out of range 0–31: '], lint_undef_pin:['możliwy nieznany pin/nazwa: ','possibly undefined pin/name: '],
   chip_label:['Wirtualny układ','Virtual chip'], chip_none:['brak','none'], chip_nomap:['Wybierz układ, a skrypt musi mieć piny SDA i SCL','Select a chip; the script needs SDA and SCL pins'],
   chip_start:['START','START'], chip_stop:['STOP','STOP'], chip_wr:['ZAPIS mem','WRITE mem'], chip_rd:['ODCZYT mem','READ mem'], chip_ack:['ACK','ACK'], chip_nack:['NACK','NACK'],
-  tab_wave:['Przebiegi','Waveform'], wave_empty:['Uruchom symulację z wybranym wirtualnym układem, aby zobaczyć przebiegi SDA/SCK/…','Run the simulation with a virtual chip selected to see SDA/SCK/… waveforms.']
+  tab_wave:['Przebiegi','Waveform'], wave_empty:['Uruchom symulację z wybranym wirtualnym układem, aby zobaczyć przebiegi SDA/SCK/…','Run the simulation with a virtual chip selected to see SDA/SCK/… waveforms.'],
+  tb_hex:['🗂 Pamięć','🗂 Memory'], hex_title:['🗂 Pamięć wirtualnego układu','🗂 Virtual chip memory'], hex_sub:['Wczytaj/edytuj dump — symulator czyta i zapisuje te bajty','Load/edit a dump — the simulator reads and writes these bytes'], hex_size:['Rozmiar','Size'], hex_open:['Otwórz .bin','Open .bin'], hex_paste:['Wklej hex','Paste hex'], hex_copy:['Kopiuj hex','Copy hex'], hex_dl:['Pobierz .bin','Download .bin'], hex_fill:['Wypełnij FF','Fill FF'], hex_loaded:['Wczytano dump:','Loaded dump:'], hex_paste_prompt:['Wklej dump w hex (spacje/nowe linie OK):','Paste a hex dump (spaces/newlines OK):'], hex_bytes_word:['B','B']
 };
 function t(k){const e=DICT[k];return e?(LANG==='en'?e[1]:e[0]):k;}
 function applyStaticLang(){
@@ -914,12 +960,18 @@ function recordWave(ctx,name,v){if(!ctx.wave)return;const w=ctx.wave;if(w.last[n
 function setPin(name,val,ctx){name=name.toUpperCase();if(name in ctx.pins){const p=ctx.pins[name];p.v=val&1;ctx.log("sig",`  ${name} = ${p.v}`);if(ctx.wave)ctx.wave.t++;if(ctx.chip)ctx.chip.write(p.num,p.v);recordWave(ctx,name,p.v);}}
 function setBit(base,idx,val,ctx){const R=resolveReg(base);if(R in ctx.regs){let v=ctx.regs[R];if(val&1)v|=(1<<idx);else v&=~(1<<idx);ctx.regs[R]=v>>>0;ctx.changed.add(R);}else if(base.toUpperCase() in ctx.pins){setPin(base,val,ctx);}}
 
+/* ── Virtual chip memory (editable dump, shared by all chips + hex editor) ── */
+let VMEM=(()=>{const a=new Uint8Array(256);for(let i=0;i<256;i++)a[i]=(i^0x5A)&0xFF;return a;})();
+function vmemResize(size){const a=new Uint8Array(size);a.fill(0xFF);a.set(VMEM.subarray(0,Math.min(size,VMEM.length)));VMEM=a;try{saveVmem();}catch(_){}}
+function saveVmem(){try{localStorage.setItem("hpl_vmem",Array.from(VMEM).map(b=>b.toString(16).padStart(2,'0')).join(''));}catch(_){}}
+function loadVmem(){try{const h=localStorage.getItem("hpl_vmem");if(h&&h.length>=2){const n=h.length/2|0;const a=new Uint8Array(n);for(let i=0;i<n;i++)a[i]=parseInt(h.substr(i*2,2),16)||0;VMEM=a;}}catch(_){}}
+
 /* ── Virtual chips (unified interface: write(pinNum,v), read(pinNum)->0/1|null) ── */
 function hx2(n){return '0x'+(((n)>>>0)&0xFF).toString(16).toUpperCase().padStart(2,'0');}
 function hx4(n){return '0x'+(((n)>>>0)&0xFFFF).toString(16).toUpperCase().padStart(4,'0');}
-// 24C02 I2C EEPROM. P={sda,scl}
-function makeI2C(log,P){
-  const mem=new Uint8Array(256);for(let i=0;i<256;i++)mem[i]=(i^0x5A)&0xFF;
+// 24C02 I2C EEPROM. P={sda,scl}, mem=shared editable byte buffer
+function makeI2C(log,P,mem){
+  const M=mem.length;
   let mSDA=1,mSCL=1,sDrive=1,phase='IDLE',bit=0,shift=0,rw=0,waddr=0,sendByte=0;
   function start(){phase='CTRL';bit=0;shift=0;sDrive=1;log('sig','  I2C '+t('chip_start'));}
   function stop(){phase='IDLE';sDrive=1;log('sig','  I2C '+t('chip_stop'));}
@@ -928,14 +980,14 @@ function makeI2C(log,P){
     if(phase==='CTRL'||phase==='WADDR'||phase==='WDATA'){
       if(bit<8){shift=((shift<<1)|(mSDA&1))&0xFF;}
       if(bit===8){
-        if(phase==='CTRL'){rw=shift&1;phase=rw?'READ':'WADDR';if(rw){sendByte=mem[waddr&0xFF];}}
+        if(phase==='CTRL'){rw=shift&1;phase=rw?'READ':'WADDR';if(rw){sendByte=mem[waddr%M];}}
         else if(phase==='WADDR'){waddr=shift&0xFF;phase='WDATA';}
-        else{mem[waddr&0xFF]=shift;log('sig','  '+t('chip_wr')+'['+hx2(waddr)+']='+hx2(shift)+' '+t('chip_ack'));waddr=(waddr+1)&0xFF;}
+        else{mem[waddr%M]=shift;log('sig','  '+t('chip_wr')+'['+hx2(waddr)+']='+hx2(shift)+' '+t('chip_ack'));waddr=(waddr+1)&0xFF;}
         shift=0;bit=0;return;
       }
     }else if(phase==='READ'){
       if(bit<8){if(bit===7)log('sig','  '+t('chip_rd')+'['+hx2(waddr)+']='+hx2(sendByte));}
-      else{if((mSDA&1)===0){waddr=(waddr+1)&0xFF;sendByte=mem[waddr&0xFF];}else phase='RDDONE';bit=0;return;}
+      else{if((mSDA&1)===0){waddr=(waddr+1)&0xFF;sendByte=mem[waddr%M];}else phase='RDDONE';bit=0;return;}
     }
     bit++;
   }
@@ -943,36 +995,38 @@ function makeI2C(log,P){
   function setSDA(v){v&=1;const o=mSDA;mSDA=v;if(mSCL===1){if(o===1&&v===0)start();else if(o===0&&v===1)stop();}}
   return{write:(n,v)=>{if(n===P.scl)setSCL(v);else if(n===P.sda)setSDA(v);},read:(n)=>n===P.sda?(mSDA&sDrive):null};
 }
-// 25xx SPI EEPROM (16-bit addr). P={sck,si,so,cs}
-function makeSPI(log,P){
-  const mem=new Uint8Array(65536);for(let i=0;i<65536;i++)mem[i]=(i^0x5A)&0xFF;
+// 25xx SPI EEPROM (16-bit addr). P={sck,si,so,cs}, mem=shared editable byte buffer
+function makeSPI(log,P,mem){
+  const M=mem.length;
   let cs=1,sck=0,si=0,so=0,phase='IDLE',n=0,shift=0,addr=0,sendByte=0,status=0;
   function csEdge(v){if(cs===1&&v===0){phase='CMD';n=0;shift=0;log('sig','  SPI CS↓');}else if(cs===0&&v===1){phase='IDLE';log('sig','  SPI CS↑');}cs=v;}
   function decode(){const c=shift;if(c===0x03){phase='RADDR';n=0;addr=0;}else if(c===0x02){phase='WADDR';n=0;addr=0;}else if(c===0x06){status|=2;phase='WAIT';log('sig','  SPI WREN');}else if(c===0x05){phase='RDSR';sendByte=status;n=0;}else if(c===0x01){phase='WRSR';n=0;shift=0;}else phase='WAIT';}
   function rising(){
     if(phase==='CMD'){shift=((shift<<1)|si)&0xFF;n++;if(n===8)decode();}
-    else if(phase==='RADDR'){addr=((addr<<1)|si)&0xFFFF;n++;if(n===16){phase='READ';n=0;sendByte=mem[addr];}}
+    else if(phase==='RADDR'){addr=((addr<<1)|si)&0xFFFF;n++;if(n===16){phase='READ';n=0;sendByte=mem[addr%M];}}
     else if(phase==='WADDR'){addr=((addr<<1)|si)&0xFFFF;n++;if(n===16){phase='WDATA';n=0;shift=0;}}
-    else if(phase==='WDATA'){shift=((shift<<1)|si)&0xFF;n++;if(n===8){mem[addr]=shift;log('sig','  '+t('chip_wr')+'['+hx4(addr)+']='+hx2(shift));addr=(addr+1)&0xFFFF;n=0;shift=0;}}
+    else if(phase==='WDATA'){shift=((shift<<1)|si)&0xFF;n++;if(n===8){mem[addr%M]=shift;log('sig','  '+t('chip_wr')+'['+hx4(addr)+']='+hx2(shift));addr=(addr+1)&0xFFFF;n=0;shift=0;}}
     else if(phase==='WRSR'){shift=((shift<<1)|si)&0xFF;n++;if(n===8){status=shift;phase='WAIT';}}
-    else if(phase==='READ'){n++;if(n===8){log('sig','  '+t('chip_rd')+'['+hx4(addr)+']='+hx2(sendByte));addr=(addr+1)&0xFFFF;sendByte=mem[addr];n=0;}}
+    else if(phase==='READ'){n++;if(n===8){log('sig','  '+t('chip_rd')+'['+hx4(addr)+']='+hx2(sendByte));addr=(addr+1)&0xFFFF;sendByte=mem[addr%M];n=0;}}
     else if(phase==='RDSR'){n++;if(n===8)n=0;}
   }
   function falling(){so=(phase==='READ'||phase==='RDSR')?((sendByte>>(7-n))&1):0;}
   function setSCK(v){v&=1;const r=(sck===0&&v===1),f=(sck===1&&v===0);sck=v;if(r)rising();else if(f)falling();}
   return{write:(nn,v)=>{if(nn===P.cs)csEdge(v&1);else if(nn===P.sck)setSCK(v);else if(nn===P.si)si=v&1;},read:(nn)=>nn===P.so?so:null};
 }
-// 93C46 Microwire EEPROM (x16, 6-bit addr, standard, no dummy bit). P={clk,di,do,cs}
-function makeMW(log,P){
-  const mem=new Uint16Array(64);for(let i=0;i<64;i++)mem[i]=((i^0x5A)|(((i^0x3C)&0xFF)<<8))&0xFFFF;
+// 93C46 Microwire EEPROM (x16, 6-bit addr, standard, no dummy bit). P={clk,di,do,cs}, mem=shared byte buffer (LE words)
+function makeMW(log,P,mem){
+  const M=mem.length;
+  const rdW=(a)=>mem[(2*a)%M]|(mem[(2*a+1)%M]<<8);
+  const wrW=(a,w)=>{mem[(2*a)%M]=w&0xFF;mem[(2*a+1)%M]=(w>>8)&0xFF;};
   let cs=0,clk=0,di=0,dob=1,phase='IDLE',n=0,shift=0,op=0,addr=0,word=0;
   function csEdge(v){if(v===1&&cs===0){phase='START';n=0;shift=0;log('sig','  MW CS↑');}else if(v===0&&cs===1){phase='IDLE';dob=1;}cs=v;}
   function rising(){
     if(cs!==1)return;
     if(phase==='START'){if(di===1){phase='OP';n=0;shift=0;}return;}
     if(phase==='OP'){shift=((shift<<1)|di)&3;n++;if(n===2){op=shift;phase='ADDR';n=0;shift=0;}return;}
-    if(phase==='ADDR'){shift=((shift<<1)|di)&0x3F;n++;if(n===6){addr=shift&0x3F;if(op===2){phase='READ';n=0;word=mem[addr];log('sig','  '+t('chip_rd')+'['+hx2(addr)+']='+hx4(word));}else if(op===1){phase='WDATA';n=0;shift=0;}else phase='DONE';}return;}
-    if(phase==='WDATA'){shift=((shift<<1)|di)&0xFFFF;n++;if(n===16){mem[addr]=shift;log('sig','  '+t('chip_wr')+'['+hx2(addr)+']='+hx4(shift));phase='DONE';}return;}
+    if(phase==='ADDR'){shift=((shift<<1)|di)&0x3F;n++;if(n===6){addr=shift&0x3F;if(op===2){phase='READ';n=0;word=rdW(addr);log('sig','  '+t('chip_rd')+'['+hx2(addr)+']='+hx4(word));}else if(op===1){phase='WDATA';n=0;shift=0;}else phase='DONE';}return;}
+    if(phase==='WDATA'){shift=((shift<<1)|di)&0xFFFF;n++;if(n===16){wrW(addr,shift);log('sig','  '+t('chip_wr')+'['+hx2(addr)+']='+hx4(shift));phase='DONE';}return;}
     if(phase==='READ'){n++;if(n===16)phase='DONE';return;}
   }
   function falling(){dob=(phase==='READ')?((word>>(15-n))&1):1;}
@@ -1107,9 +1161,9 @@ function startDebug(){
   if(chipType!=="none"){
     ctx.wave={t:0,events:[],last:{},pins:Object.keys(prog.pins)};
     const fp=(re)=>{let num=-1;Object.entries(prog.pins).forEach(([nm,p])=>{if(num<0&&re.test(nm))num=p.num;});return num;};
-    if(chipType==="24c02"){const sda=fp(/SDA/),scl=fp(/SCL/);if(sda>=0&&scl>=0){ctx.chip=makeI2C(ctx.log,{sda,scl});ctx.log("sys","🔌 24C02 I2C (SDA=p"+sda+", SCL=p"+scl+")");}else ctx.log("errln","⚠ "+t('chip_nomap'));}
-    else if(chipType==="spi"){const sck=fp(/SCK|SCLK|CLK/),si=fp(/^SI$|MOSI/),so=fp(/^SO$|MISO/),cs=fp(/CS|\bSS\b/);if(sck>=0&&si>=0&&so>=0&&cs>=0){ctx.chip=makeSPI(ctx.log,{sck,si,so,cs});ctx.log("sys","🔌 25xx SPI (SCK=p"+sck+", SI=p"+si+", SO=p"+so+", CS=p"+cs+")");}else ctx.log("errln","⚠ "+t('chip_nomap'));}
-    else if(chipType==="mw"){const clk=fp(/CLK|\bSK\b/),di=fp(/^DI$/),dout=fp(/^DO$/),cs=fp(/CS/);if(clk>=0&&di>=0&&dout>=0&&cs>=0){ctx.chip=makeMW(ctx.log,{clk,di,do:dout,cs});ctx.log("sys","🔌 93C46 MW (CLK=p"+clk+", DI=p"+di+", DO=p"+dout+", CS=p"+cs+")");}else ctx.log("errln","⚠ "+t('chip_nomap'));}
+    if(chipType==="24c02"){const sda=fp(/SDA/),scl=fp(/SCL/);if(sda>=0&&scl>=0){ctx.chip=makeI2C(ctx.log,{sda,scl},VMEM);ctx.log("sys","🔌 24C02 I2C (SDA=p"+sda+", SCL=p"+scl+")");}else ctx.log("errln","⚠ "+t('chip_nomap'));}
+    else if(chipType==="spi"){const sck=fp(/SCK|SCLK|CLK/),si=fp(/^SI$|MOSI/),so=fp(/^SO$|MISO/),cs=fp(/CS|\bSS\b/);if(sck>=0&&si>=0&&so>=0&&cs>=0){ctx.chip=makeSPI(ctx.log,{sck,si,so,cs},VMEM);ctx.log("sys","🔌 25xx SPI (SCK=p"+sck+", SI=p"+si+", SO=p"+so+", CS=p"+cs+")");}else ctx.log("errln","⚠ "+t('chip_nomap'));}
+    else if(chipType==="mw"){const clk=fp(/CLK|\bSK\b/),di=fp(/^DI$/),dout=fp(/^DO$/),cs=fp(/CS/);if(clk>=0&&di>=0&&dout>=0&&cs>=0){ctx.chip=makeMW(ctx.log,{clk,di,do:dout,cs},VMEM);ctx.log("sys","🔌 93C46 MW (CLK=p"+clk+", DI=p"+di+", DO=p"+dout+", CS=p"+cs+")");}else ctx.log("errln","⚠ "+t('chip_nomap'));}
   }
   const st={i:0,line:prog.sections[secName].line};
   const nodes=parseNodes(prog.sections[secName].body,st);
@@ -1272,9 +1326,52 @@ $("#blkInsert").addEventListener("click",()=>{const hpl=blkGen(blkTree,"");if(!h
 $("#blkModal").addEventListener("click",e=>{if(e.target.id==="blkModal")$("#blkModal").classList.remove("open");});
 document.addEventListener("keydown",e=>{if(e.key==="Escape"&&$("#blkModal").classList.contains("open"))$("#blkModal").classList.remove("open");});
 
+/* ═══════════════════════════ Hex editor (edytowalna pamięć układu) ═══════════════════════════ */
+let hexPage=0;
+function renderHex(){
+  const grid=$("#hexGrid");grid.innerHTML="";
+  const per=256,pages=Math.max(1,Math.ceil(VMEM.length/per));
+  if(hexPage>=pages)hexPage=pages-1;if(hexPage<0)hexPage=0;
+  const base=hexPage*per;
+  $("#hexPageLbl").textContent=(hexPage+1)+" / "+pages;
+  $("#hexInfo").textContent="VMEM "+VMEM.length+" "+t('hex_bytes_word')+" · "+hx4(base)+"–"+hx4(Math.min(VMEM.length,base+per)-1);
+  for(let r=0;r<per;r+=16){const off=base+r;if(off>=VMEM.length)break;
+    const row=document.createElement("div");row.className="hex-row";row.dataset.off=off;
+    const o=document.createElement("span");o.className="hex-off";o.textContent=off.toString(16).toUpperCase().padStart(6,'0');row.appendChild(o);
+    const bytes=document.createElement("div");bytes.className="hex-bytes";
+    for(let c=0;c<16;c++){const idx=off+c;if(idx>=VMEM.length)break;
+      const inp=document.createElement("input");inp.className="hex-b"+(c===8?" gap":"");inp.maxLength=2;inp.value=VMEM[idx].toString(16).toUpperCase().padStart(2,'0');inp.dataset.idx=idx;inp.id="hb"+idx;
+      inp.addEventListener("input",()=>{let v=parseInt(inp.value,16);if(isNaN(v))v=0;v&=0xFF;VMEM[idx]=v;saveVmem();updateAscii(row);if(inp.value.length>=2){const nx=$("#hb"+(idx+1));if(nx)nx.focus();}});
+      inp.addEventListener("focus",()=>inp.select());
+      bytes.appendChild(inp);}
+    row.appendChild(bytes);
+    const as=document.createElement("span");as.className="hex-ascii";row.appendChild(as);updateAscii(row);
+    grid.appendChild(row);}
+}
+function updateAscii(row){const off=+row.dataset.off;const as=row.querySelector(".hex-ascii");let s="";for(let c=0;c<16;c++){const idx=off+c;if(idx>=VMEM.length)break;const b=VMEM[idx];s+=(b>=32&&b<127)?String.fromCharCode(b):".";}as.textContent=s;}
+function openHex(){$("#hexSize").value=[128,256,512,1024,2048,4096,8192].includes(VMEM.length)?String(VMEM.length):"256";$("#hexModal").classList.add("open");renderHex();}
+$("#hexBtn").addEventListener("click",openHex);
+$("#hexClose").addEventListener("click",()=>$("#hexModal").classList.remove("open"));
+$("#hexModal").addEventListener("click",e=>{if(e.target.id==="hexModal")$("#hexModal").classList.remove("open");});
+$("#hexSize").addEventListener("change",e=>{vmemResize(+e.target.value);hexPage=0;renderHex();});
+$("#hexPrev").addEventListener("click",()=>{hexPage--;renderHex();});
+$("#hexNext").addEventListener("click",()=>{hexPage++;renderHex();});
+$("#hexGoto").addEventListener("keydown",e=>{if(e.key==="Enter"){const off=parseInt(($("#hexGoto").value||"").replace(/^0x/i,''),16);if(!isNaN(off)&&off<VMEM.length){hexPage=Math.floor(off/256);renderHex();const el=$("#hb"+off);if(el)el.focus();}}});
+$("#hexFill").addEventListener("click",()=>{VMEM.fill(0xFF);saveVmem();renderHex();toast("FF ✓");});
+$("#hexOpen").addEventListener("click",()=>$("#hexFileInput").click());
+$("#hexFileInput").addEventListener("change",e=>{const f=e.target.files&&e.target.files[0];if(!f)return;const rd=new FileReader();rd.onload=()=>{VMEM=new Uint8Array(rd.result);saveVmem();hexPage=0;openHex();toast(t('hex_loaded')+" "+f.name+" ("+VMEM.length+" B)");};rd.readAsArrayBuffer(f);e.target.value="";});
+$("#hexPaste").addEventListener("click",()=>{const s=prompt(t('hex_paste_prompt'));if(s==null)return;const hex=s.replace(/0x/gi,'').replace(/[^0-9a-fA-F]/g,'');if(hex.length<2)return;const n=hex.length>>1;const a=new Uint8Array(n);for(let i=0;i<n;i++)a[i]=parseInt(hex.substr(i*2,2),16);VMEM=a;saveVmem();hexPage=0;openHex();toast(t('hex_loaded')+" "+n+" B");});
+$("#hexCopy").addEventListener("click",()=>{copyText(Array.from(VMEM).map(b=>b.toString(16).toUpperCase().padStart(2,'0')).join(' '),"hex");});
+$("#hexDl").addEventListener("click",async()=>{const name=($("#cfgChip").value.trim()||"dump")+".bin";
+  if(downloads){try{await downloads.save({filename:name,data:VMEM});toast(t('dl_saved_web')+" "+name);return;}catch(_){}}
+  if(window.hplNative&&window.hplNative.saveFile){try{const p=await window.hplNative.saveFile({defaultName:name,data:VMEM});if(p){toast(t('dl_saved')+" "+p);return;}}catch(_){}}
+  $("#hexCopy").click();});
+document.addEventListener("keydown",e=>{if(e.key==="Escape"&&$("#hexModal").classList.contains("open"))$("#hexModal").classList.remove("open");});
+
 /* ═══════════════════════════ Persistence / boot ═══════════════════════════ */
 function saveDraft(){try{localStorage.setItem("hpl_draft",code.value);}catch(_){}}
 function boot(){
+  loadVmem();
   try{const th=localStorage.getItem("hpl_theme");if(th){document.documentElement.setAttribute("data-theme",th);$("#themeSel").value=th;}}catch(_){}
   $("#langSel").value=LANG;
   let draft="";try{draft=localStorage.getItem("hpl_draft")||"";}catch(_){}
