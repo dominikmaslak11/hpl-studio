@@ -61,6 +61,7 @@ See `desktop/README.md`. Runs HPL Studio outside the browser sandbox, adding nat
 - [x] Chip recognition from a dump (by size/patterns → 24Cxx/93Cxx/25xx candidates)
 - [x] Write-script generator (dump/changed bytes → HPL 'patch' for 24C02/25xx/93C46)
 - [x] AI dump analysis (hex slice + context → fields/odometer/checksum analysis)
+- [x] Dump analysis: diff two dumps (A vs B) + known-value locator (LE/BE/BCD/complement/scales) with offset jump
 ## License
 
 MIT (see `LICENSE`) — covers the original work in this repository.

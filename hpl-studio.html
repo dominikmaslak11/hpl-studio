@@ -245,6 +245,17 @@
   .hex-b:focus{outline:none;border-color:var(--accent);background:var(--accent-soft);color:var(--accent)}
   .hex-b.gap{margin-left:8px}
   .hex-ascii{margin-left:12px;color:var(--muted);white-space:pre;letter-spacing:1px}
+  /* analysis */
+  .ana-body{flex:1;display:flex;flex-direction:column;min-height:0;overflow:hidden}
+  .ana-tools{padding:12px 16px;border-bottom:1px solid var(--border);display:flex;flex-wrap:wrap;gap:22px}
+  .ana-sec h3{font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin:0 0 8px}
+  .ana-row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+  .ana-results{flex:1;overflow:auto;padding:8px 16px;font-family:var(--mono);font-size:12.5px}
+  .ana-hit{display:flex;gap:12px;align-items:center;padding:5px 6px;border-bottom:1px solid var(--border)}
+  .ana-hit:hover{background:var(--panel2)}
+  .ana-off{color:var(--accent);cursor:pointer;text-decoration:underline;flex:none;width:56px}
+  .ana-enc{color:var(--muted)}
+  .ana-h3{font-size:12px;color:var(--muted);margin:8px 0 4px;font-family:var(--sans);text-transform:uppercase;letter-spacing:.06em}
 
   .statusbar{display:flex;align-items:center;gap:14px;flex-wrap:wrap;padding:6px 14px;
     background:var(--panel2);border-top:1px solid var(--border);font-family:var(--mono);
@@ -480,6 +491,7 @@
       <button class="btn sm" id="hexFill" data-t="hex_fill">Wypełnij FF</button>
       <button class="btn sm" id="hexRecognize" data-t="hex_recognize">🔎 Rozpoznaj</button>
       <button class="btn sm" id="hexPatch" data-t="hex_patch">⇢ Skrypt zapisu</button>
+      <button class="btn sm" id="hexAna" data-t="ana_btn">🔬 Analiza</button>
       <span style="margin-left:auto;display:flex;gap:6px;align-items:center">
         <button class="btn sm" id="hexPrev">◀</button>
         <span id="hexPageLbl" style="font-family:var(--mono);font-size:12px"></span>
@@ -490,6 +502,38 @@
     </div>
     <div class="hex-grid-wrap"><div id="hexGrid" class="hex-grid"></div></div>
     <div class="modal-foot" style="justify-content:flex-start"><span class="mh-sub" id="hexInfo"></span></div>
+  </div>
+</div>
+
+<div class="modal" id="anaModal">
+  <div class="modal-box">
+    <div class="modal-head">
+      <h2 data-t="ana_title">🔬 Analiza dumpu</h2>
+      <span class="mh-sub" data-t="ana_sub">Diff dwóch dumpów i lokalizator znanej wartości</span>
+      <button class="btn sm close" id="anaClose" data-t="blk_close">✕ Zamknij</button>
+    </div>
+    <div class="ana-body">
+      <div class="ana-tools">
+        <div class="ana-sec">
+          <h3 data-t="ana_diff_h">Diff A vs B</h3>
+          <div class="ana-row">
+            <button class="btn sm" id="anaLoadB" data-t="ana_load_b">Wczytaj B</button>
+            <button class="btn sm" id="anaPasteB" data-t="ana_paste_b">Wklej B</button>
+            <button class="btn sm primary" id="anaDiff" data-t="ana_diff_run">Porównaj</button>
+            <span id="anaBinfo" class="mh-sub"></span>
+          </div>
+        </div>
+        <div class="ana-sec">
+          <h3 data-t="ana_loc_h">Lokalizator wartości</h3>
+          <div class="ana-row">
+            <input class="txt" id="anaValue" data-tph="ana_value_ph" placeholder="123456" style="width:190px">
+            <button class="btn sm primary" id="anaLocate" data-t="ana_locate">Szukaj</button>
+          </div>
+        </div>
+      </div>
+      <div class="ana-results" id="anaResults"></div>
+    </div>
+    <input type="file" id="anaFileB" hidden>
   </div>
 </div>
 
@@ -565,7 +609,10 @@ const DICT={
   patch_none:['Brak zmienionych bajtów — generuję zapis CAŁOŚCI (może być duży).','No changed bytes — generating a FULL write (may be large).'], patch_done:['Wstawiono skrypt zapisu (','Inserted write script ('], patch_bytes:['pozycji)','entries)'], patch_pick:['Najpierw wybierz typ w „Wirtualny układ" (24C02/25xx/93C46).','First pick a type in Virtual chip (24C02/25xx/93C46).'],
   ai_dump:['Analizuj dump','Analyze dump'], ai_dump_none:['Najpierw wczytaj dump w 🗂 Pamięć.','Load a dump in 🗂 Memory first.'],
   ai_x_dump:['Przeanalizuj ten zrzut pamięci EEPROM/MCU. Zidentyfikuj prawdopodobne pola (liczniki/przebieg, sumy kontrolne, kopie/mirrory, VIN/PIN), zaproponuj kodowanie wartości i offsety w hex. Jeśli w opisie podano znaną wartość, znajdź ją w typowych kodowaniach (LE/BE, BCD, dopełnienie, nibble-swap).','Analyze this EEPROM/MCU memory dump. Identify likely fields (counters/odometer, checksums, copies/mirrors, VIN/PIN), propose the value encoding and hex offsets. If a known value is given, locate it across common encodings (LE/BE, BCD, complement, nibble-swap).'],
-  ai_dump_ctx:['\n\nZrzut pamięci (hex, offset: bajty):\n','\n\nMemory dump (hex, offset: bytes):\n']
+  ai_dump_ctx:['\n\nZrzut pamięci (hex, offset: bajty):\n','\n\nMemory dump (hex, offset: bytes):\n'],
+  ana_btn:['🔬 Analiza','🔬 Analysis'], ana_title:['🔬 Analiza dumpu','🔬 Dump analysis'], ana_sub:['Diff dwóch dumpów i lokalizator znanej wartości','Diff two dumps and locate a known value'],
+  ana_diff_h:['Diff: bieżący dump (A) vs wczytany (B)','Diff: current dump (A) vs loaded (B)'], ana_load_b:['Wczytaj B (.bin)','Load B (.bin)'], ana_paste_b:['Wklej B (hex)','Paste B (hex)'], ana_diff_run:['Porównaj','Compare'], ana_no_b:['Najpierw wczytaj dump B.','Load dump B first.'], ana_diff_none:['Brak różnic (A = B na wspólnej długości).','No differences (A = B over common length).'], ana_diff_count:['różnic','differences'], ana_bfrom:['B:','B:'],
+  ana_loc_h:['Lokalizator wartości (np. przebieg)','Value locator (e.g. odometer)'], ana_value_ph:['wartość dziesiętnie, np. 123456','value in decimal, e.g. 123456'], ana_locate:['Szukaj','Search'], ana_bad_value:['Podaj wartość dziesiętną.','Enter a decimal value.'], ana_no_hits:['Nie znaleziono w typowych kodowaniach. Spróbuj innej skali lub porównaj dwa dumpy (diff).','Not found in common encodings. Try another scale or compare two dumps (diff).'], ana_hits:['trafień','hits'], ana_compl:['+dopełnienie obok','+complement next'], ana_open_hex:['pokaż w hex','show in hex']
 };
 function t(k){const e=DICT[k];return e?(LANG==='en'?e[1]:e[0]):k;}
 function applyStaticLang(){
@@ -1416,6 +1463,58 @@ $("#hexDl").addEventListener("click",async()=>{const name=($("#cfgChip").value.t
   if(window.hplNative&&window.hplNative.saveFile){try{const p=await window.hplNative.saveFile({defaultName:name,data:VMEM});if(p){toast(t('dl_saved')+" "+p);return;}}catch(_){}}
   $("#hexCopy").click();});
 document.addEventListener("keydown",e=>{if(e.key==="Escape"&&$("#hexModal").classList.contains("open"))$("#hexModal").classList.remove("open");});
+
+/* ═══════════════════════════ Analiza dumpu (diff + lokalizator) ═══════════════════════════ */
+let dumpB=null;
+function hx2b(v){return (v&0xFF).toString(16).toUpperCase().padStart(2,'0');}
+function anaOpen(){$("#anaModal").classList.add("open");$("#anaResults").innerHTML="";$("#anaBinfo").textContent=dumpB?(t('ana_bfrom')+" "+dumpB.length+" B"):"";}
+$("#hexAna").addEventListener("click",anaOpen);
+$("#anaClose").addEventListener("click",()=>$("#anaModal").classList.remove("open"));
+$("#anaModal").addEventListener("click",e=>{if(e.target.id==="anaModal")$("#anaModal").classList.remove("open");});
+$("#anaLoadB").addEventListener("click",()=>$("#anaFileB").click());
+$("#anaFileB").addEventListener("change",e=>{const f=e.target.files&&e.target.files[0];if(!f)return;const rd=new FileReader();rd.onload=()=>{dumpB=new Uint8Array(rd.result);$("#anaBinfo").textContent=t('ana_bfrom')+" "+f.name+" ("+dumpB.length+" B)";};rd.readAsArrayBuffer(f);e.target.value="";});
+$("#anaPasteB").addEventListener("click",()=>{const s=prompt(t('hex_paste_prompt'));if(s==null)return;const hex=s.replace(/0x/gi,'').replace(/[^0-9a-fA-F]/g,'');if(hex.length<2)return;const n=hex.length>>1;const a=new Uint8Array(n);for(let i=0;i<n;i++)a[i]=parseInt(hex.substr(i*2,2),16);dumpB=a;$("#anaBinfo").textContent=t('ana_bfrom')+" "+n+" B";});
+function jumpHex(off){$("#anaModal").classList.remove("open");if(!$("#hexModal").classList.contains("open"))openHex();hexPage=Math.floor(off/256);renderHex();const el=$("#hb"+off);if(el){el.focus();el.scrollIntoView({block:'center'});}}
+function bindOff(){$("#anaResults").querySelectorAll(".ana-off").forEach(el=>el.addEventListener("click",()=>jumpHex(+el.dataset.off)));}
+$("#anaDiff").addEventListener("click",()=>{
+  if(!dumpB){$("#anaResults").innerHTML='<div class="ana-h3">'+t('ana_no_b')+'</div>';return;}
+  const n=Math.min(VMEM.length,dumpB.length),diffs=[];for(let i=0;i<n;i++)if(VMEM[i]!==dumpB[i])diffs.push(i);
+  if(!diffs.length){$("#anaResults").innerHTML='<div class="ana-h3">'+t('ana_diff_none')+'</div>';return;}
+  let html='<div class="ana-h3">'+diffs.length+' '+t('ana_diff_count')+'</div>';
+  diffs.slice(0,400).forEach(i=>{html+=`<div class="ana-hit"><span class="ana-off" data-off="${i}">${i.toString(16).toUpperCase().padStart(4,'0')}</span><span>A=${hx2b(VMEM[i])}</span><span class="ana-enc">B=${hx2b(dumpB[i])}</span></div>`;});
+  if(diffs.length>400)html+='<div class="ana-h3">… (+'+(diffs.length-400)+')</div>';
+  $("#anaResults").innerHTML=html;bindOff();
+});
+function findBytes(buf,pat){const res=[];if(!pat.length)return res;for(let i=0;i+pat.length<=buf.length;i++){let ok=true;for(let j=0;j<pat.length;j++)if(buf[i+j]!==pat[j]){ok=false;break;}if(ok)res.push(i);}return res;}
+function valueEncodings(V){
+  const out=[],seen=new Set();
+  const add=(b,label)=>{if(!b.length||b.some(x=>x<0||x>255))return;const k=b.join(',');if(seen.has(k))return;seen.add(k);out.push({b:Uint8Array.from(b),label});};
+  const LE=(v,n)=>{const a=[];for(let i=0;i<n;i++)a.push((Math.floor(v)>>> (8*i))&0xFF);return a;};
+  const BE=(v,n)=>LE(v,n).slice().reverse();
+  const BCD=(v)=>{let s=''+Math.floor(v);if(s.length%2)s='0'+s;const a=[];for(let i=0;i<s.length;i+=2)a.push(parseInt(s.substr(i,2),16));return a;};
+  const scales=[['',V],['÷16',Math.round(V/16)],['÷8',Math.round(V/8)],['÷10',Math.round(V/10)],['÷2',Math.round(V/2)],['×16',V*16],['÷100',Math.round(V/100)]];
+  scales.forEach(([sl,v])=>{if(!(v>=0)||!isFinite(v))return;const sfx=sl?(' '+sl):'';
+    if(v<=0xFFFF){add(LE(v,2),'LE2'+sfx);add(BE(v,2),'BE2'+sfx);add(LE((0x10000-v)&0xFFFF,2),'2C-LE2'+sfx);add(LE((~v)&0xFFFF,2),'1C-LE2'+sfx);}
+    if(v<=0xFFFFFF){add(LE(v,3),'LE3'+sfx);add(BE(v,3),'BE3'+sfx);}
+    if(v<=0xFFFFFFFF){add(LE(v,4),'LE4'+sfx);}
+    add(BCD(v),'BCD'+sfx);add(BCD(v).slice().reverse(),'BCD-LE'+sfx);
+  });
+  return out;
+}
+$("#anaLocate").addEventListener("click",()=>{
+  const V=parseInt(($("#anaValue").value||"").replace(/[^0-9]/g,''),10);
+  if(!(V>=0)){$("#anaResults").innerHTML='<div class="ana-h3">'+t('ana_bad_value')+'</div>';return;}
+  const hits=[];valueEncodings(V).forEach(c=>{findBytes(VMEM,c.b).forEach(o=>hits.push({o,label:c.label,b:c.b}));});
+  if(!hits.length){$("#anaResults").innerHTML='<div class="ana-h3">'+t('ana_no_hits')+'</div>';return;}
+  hits.sort((a,b)=>a.o-b.o||a.b.length-b.b.length);
+  let html='<div class="ana-h3">'+hits.length+' '+t('ana_hits')+'</div>';
+  hits.slice(0,300).forEach(h=>{const bytesHex=Array.from(h.b).map(hx2b).join(' ');
+    let extra='';const end=h.o+h.b.length;if(end+h.b.length<=VMEM.length){let comp=true;for(let k=0;k<h.b.length;k++)if(((VMEM[end+k]^0xFF)&0xFF)!==h.b[k]){comp=false;break;}if(comp)extra=' <span class="ana-enc">'+t('ana_compl')+'</span>';}
+    html+=`<div class="ana-hit"><span class="ana-off" data-off="${h.o}">${h.o.toString(16).toUpperCase().padStart(4,'0')}</span><span>${bytesHex}</span><span class="ana-enc">${esc(h.label)}</span>${extra}</div>`;});
+  if(hits.length>300)html+='<div class="ana-h3">… (+'+(hits.length-300)+')</div>';
+  $("#anaResults").innerHTML=html;bindOff();
+});
+document.addEventListener("keydown",e=>{if(e.key==="Escape"&&$("#anaModal").classList.contains("open"))$("#anaModal").classList.remove("open");});
 
 /* ═══════════════════════════ Persistence / boot ═══════════════════════════ */
 function saveDraft(){try{localStorage.setItem("hpl_draft",code.value);}catch(_){}}
